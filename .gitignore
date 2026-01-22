@@ -25,24 +25,11 @@ build/
 
 # Local configuration file (sdk path, etc)
 local.properties
-
-# Log Files
-*.log
-
 # Android Studio and Intellij
 /*.iml
+*.log
+*.tmp
 .idea/
-.idea/libraries/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/navEditor.xml
-.idea/assetWizardSettings.xml
-.idea/codeStyles
-.idea/dictionaries
-.idea/inspectionProfiles
-.idea/misc.xml
-.idea/runConfigurations.xml
-.idea/vcs.xml
 
 # Proguard parameters
 verify/
@@ -52,3 +39,6 @@ verify/
 
 # Kotlin
 .kotlin/
+
+# JVM heap dumps
+*.hprof
