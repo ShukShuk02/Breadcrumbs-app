@@ -1,0 +1,50 @@
+ 
+
+
+
+
+Breadcrumbs
+Travel Journal App Specification
+Hillel Levi 211477856
+Tamar Shaked 212649024
+Arbel Charny 212935654
+
+
+1. Overview and Goal
+The goal of Breadcrumbs is to create a shareable digital travel journal. It allows a user to map their journey by adding Points of Interest (POIs) with images and text entries. The primary focus is on displaying a single trip's timeline and map, and providing a personal profile page.
+
+2. Technical Stack
+* Platform: Native Android (using Android SDK)
+* Primary Language: Kotlin
+* Styling: Android XML Layouts and Material Design Components
+* Architecture: MVC (Model-View-Controller)
+* Database (Remote): Firebase
+* Database (Local): SQLite or Room Persistence Library
+* Mapping: Google Maps Android API 
+
+3. Core Features
+   A. User Authentication and Profile Management
+* Authentication: Users will be automatically authenticated upon entry using Firebase Authentication.
+* Profile Page: A single page displaying the user's name, bio, and all their created trips.
+* Profile Editing: Ability for the user to update their name and bio (stored in a private Firebase Realtime Database or Firestore profile document).
+   B. Trip Creation and Editing
+* New Trip: Users can create a new trip with a title and start/end dates.
+* POI Management: For an active trip, users can add new POIs (Waypoints).
+o Each POI must include:
+* Location Name (string)
+* Latitude and Longitude (number, using the device's GPS/Location API)
+* Date Visited (timestamp)
+* Text Entry (story/description)
+* Image URL (URL to an image stored in Firebase Storage)
+
+   C. Map Component (Trip View)
+* Display: When viewing a trip, a map component (Fragment) occupies a prominent area.
+* POI Markers: All POIs for the selected trip are plotted on the map using the Google Maps API.
+* Route Line: A line connects the POIs in chronological order to show the trip path using the map's polyline feature.
+* Interaction: Clicking a marker should highlight the corresponding entry in the trip timeline.
+
+   D. Sharing and Real-Time Updates
+* Sharing: Trips are stored in a public Firebase collection.
+* Public Access: All created trips are publicly readable, allowing friends to view them using the trip's unique ID.
+* Real-time Timeline: Use Firebase's real-time capabilities to ensure that updates are synchronized instantly.
+

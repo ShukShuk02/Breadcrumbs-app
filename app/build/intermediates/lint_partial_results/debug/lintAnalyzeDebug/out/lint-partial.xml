@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.13.2" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.example.breadcrumbs.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <location id="R.color.card_surface"
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/colors.xml"
+            line="10"
+            column="12"
+            startOffset="400"
+            endLine="10"
+            endColumn="31"
+            endOffset="419"/>
+        <entry
+            name="model"
+            string="attr[actionBarSize(R)],color[white(U),orange_primary(U),cream_background(U),text_primary(U),text_secondary(U),orange_variant(U),black(U),card_surface(D)],drawable[bg_stats_card(U),ic_arrow_back(U),shape_timeline_dot(U)],id[nav_host_fragment(U),tv_title(U),cv_image_picker(U),iv_selected_image(D),til_description(U),et_description(D),til_location(D),et_location(D),fab_save(D),til_trip_title(U),et_trip_title(D),btn_create_trip(D),header_container(U),iv_profile(U),tv_user_name(U),tv_user_bio(D),rv_trips(D),fab_create_trip(D),app_bar(U),map(U),toolbar(U),tv_trip_stats(D),rv_pois(D),fab_add_poi(D),timeline_line(U),timeline_dot(D),card_poi(U),iv_poi_image(D),tv_poi_description(D),tv_poi_location(D),tv_poi_date(D),iv_trip_cover(D),tv_trip_title(U),tv_trip_date(D),chip_poi_count(D),nav_graph(D),profileFragment(U),action_profile_to_createTrip(R),createTripFragment(U),action_profile_to_tripDetail(R),tripDetailFragment(U),action_tripDetail_to_addPoi(R),addPoiFragment(U)],layout[activity_main(U),fragment_add_poi(U),fragment_create_trip(U),fragment_profile(U),item_trip(U),fragment_trip_detail(U),item_poi(U)],mipmap[ic_launcher(U),ic_launcher_round(U)],navigation[nav_graph(U)],string[app_name(U),appbar_scrolling_view_behavior(R)],style[Theme_Breadcrumbs(U),ShapeAppearance_Material3_Corner_Full(R),Theme_Material3_DayNight_NoActionBar(R)],xml[data_extraction_rules(U),backup_rules(U)],sample[backgrounds/scenic(R)];9^1,b^2,37^40,38^3^4^d^2^5^1^e^10,39^3^4^1^2^d^15,3a^3^6^44^4^19^5^1a^18^3b^2^1,3b^1^6^48^2c^4^3,3c^3^2^0^a^42^9^4^3d^1e^1,3d^b^24^26^1^4^5,3e^7^1,3f^7^1,40^30^3a^32^34^39^3c^36^38,43^45^2^1^6^4^3;;;"/>
+    </map>
+
+</incidents>

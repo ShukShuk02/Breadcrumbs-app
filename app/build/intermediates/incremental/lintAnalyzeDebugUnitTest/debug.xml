@@ -1,0 +1,32 @@
+<variant
+    name="debug"
+    package="com.example.breadcrumbs"
+    minSdkVersion="24"
+    targetSdkVersion="34"
+    debuggable="true"
+    mergedManifest="build\intermediates\merged_manifest\debug\processDebugMainManifest\AndroidManifest.xml"
+    partialResultsDir="build\intermediates\unit_test_lint_partial_results\debug\lintAnalyzeDebugUnitTest\out"
+    desugaredMethodsFiles="C:\Users\hillel\.gradle\caches\8.13\transforms\559f8bb3e7107402a351682cc0697960\transformed\D8BackportedDesugaredMethods.txt">
+  <buildFeatures
+      viewBinding="true"
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+  </sourceProviders>
+  <testSourceProviders>
+    <sourceProvider
+        manifests="src\test\AndroidManifest.xml"
+        javaDirectories="src\test\java;src\testDebug\java;src\test\kotlin;src\testDebug\kotlin"
+        assetsDirectories="src\test\assets;src\testDebug\assets"
+        unitTest="true"/>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <manifestPlaceholders>
+    <placeholder
+        name="MAPS_API_KEY"
+        value="YOUR_API_KEY_HERE" />
+  </manifestPlaceholders>
+  <artifact
+      type="UNIT_TEST">
+  </artifact>
+</variant>

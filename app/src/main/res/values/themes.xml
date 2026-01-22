@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Breadcrumbs" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/orange_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/orange_variant</item>
+        <item name="colorOnPrimaryContainer">@color/text_primary</item>
+        <item name="android:statusBarColor">@color/cream_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorBackground">@color/cream_background</item>
+    </style>
+</resources>
