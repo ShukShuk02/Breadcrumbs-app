@@ -9,12 +9,12 @@
     <color name="text_secondary">#757575</color>
     <color name="white">#FFFFFFFF</color>
     <string name="app_name">Breadcrumbs</string>
-    <string name="gcm_defaultSenderId" translatable="false">649525544178</string>
-    <string name="google_api_key" translatable="false">AIzaSyDE2wtEwsabeSoc72Yu9PCXrekGe2VUTUQ</string>
-    <string name="google_app_id" translatable="false">1:649525544178:android:cc4737d9d4da75420b7c6b</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDE2wtEwsabeSoc72Yu9PCXrekGe2VUTUQ</string>
-    <string name="google_storage_bucket" translatable="false">breadcrumbs-c6a78.firebasestorage.app</string>
-    <string name="project_id" translatable="false">breadcrumbs-c6a78</string>
+    <string name="gcm_defaultSenderId" translatable="false">635237275132</string>
+    <string name="google_api_key" translatable="false">AIzaSyDocVJmSgoKalO08wuNyHRMr8WSBic7S_Y</string>
+    <string name="google_app_id" translatable="false">1:635237275132:android:034155d5e3e510c1878e79</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDocVJmSgoKalO08wuNyHRMr8WSBic7S_Y</string>
+    <string name="google_storage_bucket" translatable="false">breadcrumbs-fab66.firebasestorage.app</string>
+    <string name="project_id" translatable="false">breadcrumbs-fab66</string>
     <style name="Theme.Breadcrumbs" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/orange_primary</item>
         <item name="colorOnPrimary">@color/white</item>

@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.breadcrumbs"
+    namespace = "com.breadcrumbs"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.breadcrumbs"
+        applicationId = "com.breadcrumbs"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

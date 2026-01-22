@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "649525544178",
-    "project_id": "breadcrumbs-c6a78",
-    "storage_bucket": "breadcrumbs-c6a78.firebasestorage.app"
+    "project_number": "635237275132",
+    "project_id": "breadcrumbs-fab66",
+    "storage_bucket": "breadcrumbs-fab66.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:649525544178:android:cc4737d9d4da75420b7c6b",
+        "mobilesdk_app_id": "1:635237275132:android:034155d5e3e510c1878e79",
         "android_client_info": {
-          "package_name": "com.example.breadcrumbs"
+          "package_name": "com.breadcrumbs"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDE2wtEwsabeSoc72Yu9PCXrekGe2VUTUQ"
+          "current_key": "AIzaSyDocVJmSgoKalO08wuNyHRMr8WSBic7S_Y"
         }
       ],
       "services": {

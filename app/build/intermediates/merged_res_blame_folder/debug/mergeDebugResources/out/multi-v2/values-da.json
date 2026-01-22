@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.breadcrumbs.app-mergeDebugResources-56:/values-da/values-da.xml",
+            "outputFile": "com.breadcrumbs.app-mergeDebugResources-56:/values-da/values-da.xml",
             "map": [
                 {
                     "source": "C:\\Users\\hillel\\.gradle\\caches\\8.13\\transforms\\ac383060f0a96bc0c0dde37a369e8269\\transformed\\navigation-ui-2.7.7\\res\\values-da\\values-da.xml",

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.breadcrumbs.app-mergeDebugResources-56:/values-fi/values-fi.xml",
+            "outputFile": "com.breadcrumbs.app-mergeDebugResources-56:/values-fi/values-fi.xml",
             "map": [
                 {
                     "source": "C:\\Users\\hillel\\.gradle\\caches\\8.13\\transforms\\2057ed73420633954372c3dbcab3eed0\\transformed\\material-1.11.0\\res\\values-fi\\values-fi.xml",

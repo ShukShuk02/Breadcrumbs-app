@@ -6,7 +6,7 @@ android:id="@+id/nav_graph"
 app:startDestination="@id/profileFragment" >
 <fragment
     android:id="@+id/profileFragment"
-    android:name="com.example.breadcrumbs.ui.ProfileFragment"
+    android:name="com.breadcrumbs.ui.ProfileFragment"
     android:label="Profile"
     tools:layout="@layout/fragment_profile" >
 
@@ -20,12 +20,12 @@ app:startDestination="@id/profileFragment" >
 </fragment>
 <fragment
     android:id="@+id/createTripFragment"
-    android:name="com.example.breadcrumbs.ui.CreateTripFragment"
+    android:name="com.breadcrumbs.ui.CreateTripFragment"
     android:label="Create Trip"
     tools:layout="@layout/fragment_create_trip" />
 <fragment
     android:id="@+id/tripDetailFragment"
-    android:name="com.example.breadcrumbs.ui.TripDetailFragment"
+    android:name="com.breadcrumbs.ui.TripDetailFragment"
     android:label="Trip Detail"
     tools:layout="@layout/fragment_trip_detail" >
 
@@ -40,7 +40,7 @@ app:startDestination="@id/profileFragment" >
 </fragment>
 <fragment
     android:id="@+id/addPoiFragment"
-    android:name="com.example.breadcrumbs.ui.AddPoiFragment"
+    android:name="com.breadcrumbs.ui.AddPoiFragment"
     android:label="Add POI"
     tools:layout="@layout/fragment_add_poi" >
 

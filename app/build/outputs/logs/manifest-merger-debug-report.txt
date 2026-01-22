@@ -257,7 +257,7 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\hi
 		ADDED from C:\Users\hillel\Documents\Breadcrumbs-app\app\src\main\AndroidManifest.xml:14:9-65
 	android:name
 		ADDED from C:\Users\hillel\Documents\Breadcrumbs-app\app\src\main\AndroidManifest.xml:12:9-39
-activity#com.example.breadcrumbs.MainActivity
+activity#com.breadcrumbs.MainActivity
 ADDED from C:\Users\hillel\Documents\Breadcrumbs-app\app\src\main\AndroidManifest.xml:27:9-35:20
 	android:exported
 		ADDED from C:\Users\hillel\Documents\Breadcrumbs-app\app\src\main\AndroidManifest.xml:29:13-36
@@ -829,7 +829,7 @@ ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\trans
 		ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
-permission#com.example.breadcrumbs.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+permission#com.breadcrumbs.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
 		ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
@@ -839,7 +839,7 @@ uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
-uses-permission#com.example.breadcrumbs.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission#com.breadcrumbs.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\hillel\.gradle\caches\8.13\transforms\d3689a18e90631169f56df5b4edcf3f8\transformed\core-1.12.0\AndroidManifest.xml:26:22-94

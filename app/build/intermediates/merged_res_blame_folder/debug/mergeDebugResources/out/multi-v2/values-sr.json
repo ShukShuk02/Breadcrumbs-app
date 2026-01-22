@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.breadcrumbs.app-mergeDebugResources-56:/values-sr/values-sr.xml",
+            "outputFile": "com.breadcrumbs.app-mergeDebugResources-56:/values-sr/values-sr.xml",
             "map": [
                 {
                     "source": "C:\\Users\\hillel\\.gradle\\caches\\8.13\\transforms\\d3689a18e90631169f56df5b4edcf3f8\\transformed\\core-1.12.0\\res\\values-sr\\values-sr.xml",
