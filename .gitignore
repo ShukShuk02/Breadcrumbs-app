@@ -1,44 +1,108 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+####################################
+# OS
+####################################
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+Thumbs.db
+desktop.ini
 
-# Android Studio
-*.iws
-*.idb
-*.sli
+####################################
+# Logs
+####################################
+*.log
+logs/
+log/
 
-# Gradle files
+####################################
+# JVM / Java
+####################################
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+*.hprof
+
+####################################
+# Kotlin
+####################################
+*.kotlin_module
+
+####################################
+# Gradle
+####################################
 .gradle/
 build/
+**/build/
 
-# Local configuration file (sdk path, etc)
-local.properties
-# Android Studio and Intellij
-/*.iml
-*.log
-*.tmp
+####################################
+# IntelliJ / Android Studio
+####################################
 .idea/
+*.iml
+*.ipr
+*.iws
+out/
 
-# Proguard parameters
-verify/
-
-# Architecture components
+####################################
+# Android
+####################################
+*.apk
+*.aab
+*.dex
+*.ap_
+*.keystore
 *.jks
+captures/
+externalNativeBuild/
+.cxx/
 
-# Kotlin
-.kotlin/
+####################################
+# Local configuration
+####################################
+local.properties
 
-# JVM heap dumps
-*.hprof
+####################################
+# Environment files
+####################################
+.env
+.env.*
+!.env.example
+
+####################################
+# VS Code
+####################################
+.vscode/
+
+####################################
+# Node (if used)
+####################################
+node_modules/
+
+####################################
+# Temporary files
+####################################
+*.tmp
+*.temp
+*.swp
+*.bak
+*.old
+
+####################################
+# Test & coverage
+####################################
+coverage/
+*.exec
+*.ec
+*.lcov
+
+####################################
+# Crash dumps
+####################################
+crashlytics-build.properties
+
+####################################
+# Git
+####################################
+*.orig

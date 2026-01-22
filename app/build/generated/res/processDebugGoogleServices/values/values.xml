@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="gcm_defaultSenderId" translatable="false">635237275132</string>
-    <string name="google_api_key" translatable="false">AIzaSyDocVJmSgoKalO08wuNyHRMr8WSBic7S_Y</string>
-    <string name="google_app_id" translatable="false">1:635237275132:android:034155d5e3e510c1878e79</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDocVJmSgoKalO08wuNyHRMr8WSBic7S_Y</string>
-    <string name="google_storage_bucket" translatable="false">breadcrumbs-fab66.firebasestorage.app</string>
-    <string name="project_id" translatable="false">breadcrumbs-fab66</string>
-</resources>
