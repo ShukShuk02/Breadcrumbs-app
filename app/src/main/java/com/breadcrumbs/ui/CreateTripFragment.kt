@@ -10,6 +10,8 @@ import com.breadcrumbs.data.remote.FirebaseManager
 import com.breadcrumbs.databinding.FragmentCreateTripBinding
 import com.breadcrumbs.model.Trip
 import com.google.firebase.Timestamp
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 
@@ -30,20 +32,27 @@ class CreateTripFragment : Fragment(R.layout.fragment_create_trip) {
                 return@setOnClickListener
             }
 
-            // Create Trip (Mock User ID)
-            val trip = Trip(
-                id = UUID.randomUUID().toString(),
-                userId = "u1", // fetching currentUserId would require auth to be ready
-                title = title,
-                startDate = Timestamp(Date())
-            )
+            lifecycleScope.launch {
+                if (!firebaseManager.ensureAuthenticated()) {
+                    Toast.makeText(context, "Authentication failed. Please check internet.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
 
-            // Save and Navigate
-            firebaseManager.saveTrip(trip).addOnSuccessListener {
-                Toast.makeText(context, "Adventure started!", Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
-            }.addOnFailureListener {
-                Toast.makeText(context, "Error starting trip: ${it.message}", Toast.LENGTH_SHORT).show()
+                // Create Trip
+                val trip = Trip(
+                    id = UUID.randomUUID().toString(),
+                    userId = firebaseManager.currentUserId ?: "u1",
+                    title = title,
+                    startDate = Timestamp(Date())
+                )
+
+                // Save and Navigate
+                firebaseManager.saveTrip(trip).addOnSuccessListener {
+                    Toast.makeText(context, "Adventure started!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                }.addOnFailureListener {
+                    Toast.makeText(context, "Error starting trip: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
