@@ -4,24 +4,22 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
 import com.breadcrumbs.data.remote.FirebaseManager
 import com.breadcrumbs.databinding.FragmentProfileBinding
-import com.breadcrumbs.model.Trip
-import com.breadcrumbs.ui.TripAdapter
-import com.google.firebase.Timestamp
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.Date
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
     
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-    private val firebaseManager = FirebaseManager() // Should be injected
+    private val firebaseManager = FirebaseManager()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -32,34 +30,40 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun setupUI() {
-        // Setup User Info (Mock for now or fetch)
-        binding.tvUserName.text = "Hillel Levi"
-        binding.tvUserBio.text = "Travel enthusiast"
+        binding.tvUserName.text = "My Trips"
+        binding.tvUserBio.text = "Capturing my world, one crumb at a time."
 
-        // Setup Adapter
         val adapter = TripAdapter { trip ->
-            val bundle = bundleOf("tripId" to trip.id)
+            val bundle = bundleOf("tripId" to trip.id, "tripName" to trip.title)
             findNavController().navigate(R.id.action_profile_to_tripDetail, bundle)
         }
         
         binding.rvTrips.layoutManager = LinearLayoutManager(context)
         binding.rvTrips.adapter = adapter
 
-        // Setup FAB
         binding.fabCreateTrip.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_createTrip)
         }
-        
-        // Mock Data for Demo
-        val mockTrips = listOf(
-            Trip("1", "u1", "Paris Adventure", Timestamp(Date()), null, "", 3),
-            Trip("2", "u1", "Tokyo Trip", Timestamp(Date()), null, "", 12)
-        )
-        adapter.submitList(mockTrips)
     }
 
     private fun loadData() {
-        // TODO: Observe Flow from repository
+        val userId = firebaseManager.currentUserId ?: return
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                firebaseManager.getUserTrips_Flow(userId).collectLatest { trips ->
+                    _binding?.let { b ->
+                        (b.rvTrips.adapter as? TripAdapter)?.submitList(trips)
+                        
+                        if (trips.isEmpty()) {
+                            b.tvUserBio.text = "You haven't created any trips yet. Tap + to start!"
+                        } else {
+                            b.tvUserBio.text = "${trips.size} trips documented"
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

@@ -32,11 +32,27 @@ class CreateTripFragment : Fragment(R.layout.fragment_create_trip) {
                 return@setOnClickListener
             }
 
+<<<<<<< Updated upstream
             lifecycleScope.launch {
                 if (!firebaseManager.ensureAuthenticated()) {
                     Toast.makeText(context, "Authentication failed. Please check internet.", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
+=======
+            val currentUserId = firebaseManager.currentUserId
+            if (currentUserId == null) {
+                Toast.makeText(context, "You must be signed in to create a trip", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Create Trip with real User ID
+            val trip = Trip(
+                id = UUID.randomUUID().toString(),
+                userId = currentUserId,
+                title = title,
+                startDate = Timestamp(Date())
+            )
+>>>>>>> Stashed changes
 
                 // Create Trip
                 val trip = Trip(
