@@ -12,6 +12,8 @@ import com.breadcrumbs.data.remote.FirebaseManager
 import com.breadcrumbs.databinding.FragmentAddPoiBinding
 import com.breadcrumbs.model.Poi
 import com.google.firebase.Timestamp
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 
@@ -53,22 +55,29 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
                 return@setOnClickListener
             }
 
-            // Mock Coordinates (would use Place Picker or GPS)
-            // Paris coords default
-            val lat = 48.8566
-            val lng = 2.3522
-
-            val poiId = UUID.randomUUID().toString()
-            
-            // Upload Image first if exists
-            if (imageUri != null) {
-                firebaseManager.uploadImage(imageUri!!, "pois/$poiId.jpg").addOnSuccessListener { downloadUrl ->
-                    savePoi(poiId, description, locationName, lat, lng, downloadUrl.toString())
-                }.addOnFailureListener {
-                    Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            lifecycleScope.launch {
+                if (!firebaseManager.ensureAuthenticated()) {
+                    Toast.makeText(context, "Authentication failed. Please check internet.", Toast.LENGTH_SHORT).show()
+                    return@launch
                 }
-            } else {
-                savePoi(poiId, description, locationName, lat, lng, "")
+
+                // Mock Coordinates (would use Place Picker or GPS)
+                // Paris coords default
+                val lat = 48.8566
+                val lng = 2.3522
+
+                val poiId = UUID.randomUUID().toString()
+
+                // Upload Image first if exists
+                if (imageUri != null) {
+                    firebaseManager.uploadImage(imageUri!!, "pois/$poiId.jpg").addOnSuccessListener { downloadUrl ->
+                        savePoi(poiId, description, locationName, lat, lng, downloadUrl.toString())
+                    }.addOnFailureListener {
+                        Toast.makeText(context, "Failed to upload image: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    savePoi(poiId, description, locationName, lat, lng, "")
+                }
             }
         }
     }
