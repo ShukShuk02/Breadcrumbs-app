@@ -68,43 +68,27 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
                 return@setOnClickListener
             }
 
-<<<<<<< Updated upstream
             lifecycleScope.launch {
                 if (!firebaseManager.ensureAuthenticated()) {
                     Toast.makeText(context, "Authentication failed. Please check internet.", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
 
-                // Mock Coordinates (would use Place Picker or GPS)
-                // Paris coords default
-                val lat = 48.8566
-                val lng = 2.3522
-
                 val poiId = UUID.randomUUID().toString()
-
-                // Upload Image first if exists
+                val lat = selectedLatLng!!.latitude
+                val lng = selectedLatLng!!.longitude
+                
+                binding.fabSave.isEnabled = false
+                
                 if (imageUri != null) {
                     firebaseManager.uploadImage(imageUri!!, "pois/$poiId.jpg").addOnSuccessListener { downloadUrl ->
                         savePoi(poiId, description, locationName, lat, lng, downloadUrl.toString())
-                    }.addOnFailureListener {
-                        Toast.makeText(context, "Failed to upload image: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }.addOnFailureListener { e ->
+                        binding.fabSave.isEnabled = true
+                        Toast.makeText(context, "Upload failed: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 } else {
                     savePoi(poiId, description, locationName, lat, lng, "")
-=======
-            val poiId = UUID.randomUUID().toString()
-            val lat = selectedLatLng!!.latitude
-            val lng = selectedLatLng!!.longitude
-            
-            binding.fabSave.isEnabled = false
-            
-            if (imageUri != null) {
-                firebaseManager.uploadImage(imageUri!!, "pois/$poiId.jpg").addOnSuccessListener { downloadUrl ->
-                    savePoi(poiId, description, locationName, lat, lng, downloadUrl.toString())
-                }.addOnFailureListener { e ->
-                    binding.fabSave.isEnabled = true
-                    Toast.makeText(context, "Upload failed: ${e.message}", Toast.LENGTH_LONG).show()
->>>>>>> Stashed changes
                 }
             }
         }
