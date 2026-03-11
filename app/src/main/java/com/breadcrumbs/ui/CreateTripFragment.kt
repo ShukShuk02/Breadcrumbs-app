@@ -38,10 +38,16 @@ class CreateTripFragment : Fragment(R.layout.fragment_create_trip) {
                     return@launch
                 }
 
-                // Create Trip
+                val currentUserId = firebaseManager.currentUserId
+                if (currentUserId == null) {
+                    Toast.makeText(context, "You must be signed in to create a trip", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                // Create Trip with real User ID
                 val trip = Trip(
                     id = UUID.randomUUID().toString(),
-                    userId = firebaseManager.currentUserId ?: "u1",
+                    userId = currentUserId,
                     title = title,
                     startDate = Timestamp(Date())
                 )

@@ -1,12 +1,14 @@
 package com.breadcrumbs.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.breadcrumbs.databinding.ItemPoiBinding
 import com.breadcrumbs.model.Poi
+import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -26,7 +28,7 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
             binding.tvPoiDescription.text = poi.description
             binding.tvPoiLocation.text = poi.locationName
             
-            val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
             val dateStr = if (poi.timestamp != null) {
                 dateFormat.format(poi.timestamp.toDate())
             } else {
@@ -34,7 +36,15 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
             }
             binding.tvPoiDate.text = dateStr
             
-            // TODO: Load image
+            if (poi.imageUrl.isNotEmpty()) {
+                binding.ivPoiImage.visibility = View.VISIBLE
+                Glide.with(binding.ivPoiImage.context)
+                    .load(poi.imageUrl)
+                    .centerCrop()
+                    .into(binding.ivPoiImage)
+            } else {
+                binding.ivPoiImage.visibility = View.GONE
+            }
         }
     }
 
