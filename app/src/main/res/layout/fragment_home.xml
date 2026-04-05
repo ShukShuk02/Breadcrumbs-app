@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/cream_background">
@@ -24,7 +25,8 @@
                 android:textSize="28sp"
                 android:fontFamily="sans-serif-black"
                 android:layout_margin="20dp"
-                android:textColor="@color/text_primary" />
+                android:textColor="@color/text_primary"
+                tools:ignore="HardcodedText" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -37,7 +39,8 @@
                     android:id="@+id/home_map"
                     android:name="com.google.android.gms.maps.SupportMapFragment"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    tools:ignore="FragmentTagUsage" />
             </androidx.cardview.widget.CardView>
 
             <TextView
@@ -49,7 +52,8 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginBottom="8dp"
-                android:textColor="@color/orange_variant"/>
+                android:textColor="@color/orange_variant"
+                tools:ignore="HardcodedText" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_home_trips"
@@ -61,6 +65,14 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <ProgressBar
+        android:id="@+id/pb_home_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminateTint="@color/orange_primary" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_trip"
         android:layout_width="wrap_content"
@@ -69,6 +81,7 @@
         android:layout_margin="24dp"
         app:srcCompat="@android:drawable/ic_input_add"
         app:backgroundTint="@color/orange_variant"
-        app:tint="@color/white" />
+        app:tint="@color/white"
+        android:contentDescription="Add new trip" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

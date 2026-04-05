@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.breadcrumbs.BreadcrumbsApp
@@ -14,7 +15,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
 
@@ -35,9 +37,17 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
         setupRecyclerView()
         setupMap()
 
-        viewModel.allTrips.observe(viewLifecycleOwner) { trips ->
-            tripAdapter.submitList(trips)
-            updateMapMarkers(trips)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.allTrips.collectLatest { trips ->
+                tripAdapter.submitList(trips)
+                updateMapMarkers()
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isLoading.collectLatest { isLoading ->
+                binding.pbHomeLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+            }
         }
 
         binding.fabAddTrip.setOnClickListener {
@@ -49,6 +59,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
         tripAdapter = TripAdapter { trip ->
             val bundle = Bundle().apply {
                 putString("tripId", trip.id)
+                putString("tripName", trip.title)
             }
             findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
         }
@@ -71,7 +82,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
         mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 7f))
     }
 
-    private fun updateMapMarkers(trips: List<com.breadcrumbs.model.Trip>) {
+    private fun updateMapMarkers() {
         mMap?.clear()
     }
 
