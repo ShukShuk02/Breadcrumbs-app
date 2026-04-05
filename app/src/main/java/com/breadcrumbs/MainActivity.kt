@@ -3,24 +3,23 @@ package com.breadcrumbs
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Ensure user is signed in
-        lifecycleScope.launch {
-            com.breadcrumbs.data.remote.FirebaseManager().signInAnonymously()
-                .addOnSuccessListener { 
-                    // Ready
+
+        val auth = FirebaseAuth.getInstance()
+        if (auth.currentUser == null) {
+            auth.signInAnonymously()
+                .addOnSuccessListener {
+                    Log.d("MainActivity", "Firebase sign-in successful")
                 }
-                .addOnFailureListener { 
+                .addOnFailureListener {
                     Log.e("MainActivity", "Firebase sign-in failed", it)
                 }
         }
-            
+
         setContentView(R.layout.activity_main)
     }
 }

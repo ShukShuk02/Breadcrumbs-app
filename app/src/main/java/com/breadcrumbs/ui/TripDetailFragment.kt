@@ -4,13 +4,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
-import com.breadcrumbs.data.remote.FirebaseManager
 import com.breadcrumbs.databinding.FragmentTripDetailBinding
 import com.breadcrumbs.model.Poi
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -30,8 +29,13 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
     private val binding get() = _binding!!
     private var googleMap: GoogleMap? = null
     private var tripId: String? = null
-    private val firebaseManager = FirebaseManager()
     private var currentPois: List<Poi> = emptyList()
+
+    private val viewModel: TripDetailViewModel by viewModels {
+        val app = requireActivity().application as BreadcrumbsApp
+        val tid = arguments?.getString("tripId") ?: ""
+        TripDetailViewModelFactory(app.repository, tid)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -63,15 +67,12 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
     }
 
     private fun loadData() {
-        val tid = tripId ?: return
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                firebaseManager.getPoisForTrip_Flow(tid).collectLatest { pois ->
-                    _binding?.let { b ->
-                        currentPois = pois
-                        (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
-                        updateMap(pois)
-                    }
+            viewModel.pois.collectLatest { pois ->
+                _binding?.let { b ->
+                    currentPois = pois
+                    (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
+                    updateMap(pois)
                 }
             }
         }
@@ -105,18 +106,17 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
             polylineOptions.add(position)
             builder.include(position)
         }
-        
+
         map.addPolyline(polylineOptions)
-        
+
         try {
             val bounds = builder.build()
-            // Padding of 150 to ensure markers aren't on the edge
             map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
         } catch (e: Exception) {
-             if (pois.isNotEmpty()) {
-                 val p = pois[0]
-                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(p.latitude, p.longitude), 15f))
-             }
+            if (pois.isNotEmpty()) {
+                val p = pois[0]
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(p.latitude, p.longitude), 15f))
+            }
         }
     }
 

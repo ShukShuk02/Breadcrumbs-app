@@ -1,11 +1,15 @@
 package com.breadcrumbs.data
 
+import android.net.Uri
 import android.util.Log
 import com.breadcrumbs.data.local.BreadcrumbsDao
 import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,12 +17,29 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class BreadcrumbsRepository(
-    private val dao: BreadcrumbsDao,
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val dao: BreadcrumbsDao
 ) {
+
+    private val firestore = FirebaseFirestore.getInstance().apply {
+        firestoreSettings = FirebaseFirestoreSettings.Builder()
+            .setLocalCacheSettings(com.google.firebase.firestore.MemoryCacheSettings.newBuilder().build())
+            .build()
+    }
+
+    private val auth = FirebaseAuth.getInstance()
+    private val storage = FirebaseStorage.getInstance()
+
+    val currentUserId: String?
+        get() = auth.currentUser?.uid
 
     val allTrips: Flow<List<Trip>> = dao.getAllTrips().map { localList ->
         localList.map { it.toTrip() }
+    }
+
+    fun getUserTrips(userId: String): Flow<List<Trip>> {
+        return dao.getUserTrips(userId).map { localList ->
+            localList.map { it.toTrip() }
+        }
     }
 
     suspend fun refreshAllPublicTrips() {
@@ -74,6 +95,14 @@ class BreadcrumbsRepository(
                 .set(poi).await()
 
             dao.insertPoi(poi.toLocalPoi())
+        }
+    }
+
+    suspend fun uploadImage(uri: Uri, path: String): String {
+        return withContext(Dispatchers.IO) {
+            val ref = storage.reference.child(path)
+            ref.putFile(uri).await()
+            ref.downloadUrl.await().toString()
         }
     }
 }
