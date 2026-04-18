@@ -35,7 +35,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:text="Breadcrumbs"
+                    android:text="breadcrumbs"
                     android:textSize="28sp"
                     android:fontFamily="sans-serif-black"
                     android:textColor="#3A2D24"
@@ -67,36 +67,12 @@
                     tools:ignore="FragmentTagUsage" />
             </androidx.cardview.widget.CardView>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="32dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginBottom="12dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_friends" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Friends' Trips"
-                    android:textSize="20sp"
-                    android:fontFamily="sans-serif-bold"
-                    android:textColor="#3A2D24"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_home_trips"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="24dp"
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false" />
 
@@ -109,6 +85,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
-        android:indeterminateTint="@color/orange_primary" />
+        android:indeterminateTint="#F28522" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

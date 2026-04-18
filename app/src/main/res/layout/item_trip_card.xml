@@ -6,12 +6,14 @@
     android:orientation="vertical"
     android:padding="6dp">
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="110dp"
         app:cardBackgroundColor="#FDF1E6"
         app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#EAD8C8">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -44,7 +46,7 @@
 
         </FrameLayout>
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/tv_trip_title"
