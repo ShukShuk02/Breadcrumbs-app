@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Breadcrumbs</string>
+    <string name="trip_locations_count">%1$d locations</string>
 </resources>

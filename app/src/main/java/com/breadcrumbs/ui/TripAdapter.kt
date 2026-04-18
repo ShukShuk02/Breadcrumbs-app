@@ -5,8 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.breadcrumbs.R
-import com.breadcrumbs.databinding.ItemTripBinding
+import com.breadcrumbs.databinding.ItemTripCardBinding
 import com.breadcrumbs.model.Trip
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -15,7 +14,7 @@ class TripAdapter(private val onTripClicked: (Trip) -> Unit) :
     ListAdapter<Trip, TripAdapter.TripViewHolder>(TripDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TripViewHolder {
-        val binding = ItemTripBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemTripCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TripViewHolder(binding)
     }
 
@@ -23,21 +22,19 @@ class TripAdapter(private val onTripClicked: (Trip) -> Unit) :
         holder.bind(getItem(position))
     }
 
-    inner class TripViewHolder(private val binding: ItemTripBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class TripViewHolder(private val binding: ItemTripCardBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(trip: Trip) {
             binding.tvTripTitle.text = trip.title
 
             val dateFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
             val dateStr = trip.startDate?.toDate()?.let { dateFormat.format(it) } ?: "Unknown Date"
-            binding.tvTripDate.text = dateStr
+
+            binding.tvTripSubtitle.text = "User · $dateStr"
+            binding.tvAuthorInitial.text = "U"
 
             val context = binding.root.context
-            binding.chipPoiCount.text = context.getString(R.string.trip_locations_count, trip.pointCount)
-
             com.bumptech.glide.Glide.with(context)
                 .load(trip.coverImageUrl)
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .error(android.R.drawable.ic_menu_report_image)
                 .centerCrop()
                 .into(binding.ivTripCover)
 

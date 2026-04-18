@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/cream_background">
+    android:background="#FEFAF6">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -16,24 +16,48 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="80dp">
+            android:paddingBottom="100dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="20dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_logo_cube" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="Breadcrumbs"
+                    android:textSize="28sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="#3A2D24"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Explore Adventures"
-                android:textSize="28sp"
-                android:fontFamily="sans-serif-black"
-                android:layout_margin="20dp"
-                android:textColor="@color/text_primary"
+                android:layout_marginStart="20dp"
+                android:text="Your travel memories"
+                android:textSize="16sp"
+                android:textColor="#8D7D73"
                 tools:ignore="HardcodedText" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:layout_marginHorizontal="16dp"
+                android:layout_height="220dp"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="24dp"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="4dp">
+                app:cardElevation="2dp">
 
                 <fragment
                     android:id="@+id/home_map"
@@ -43,22 +67,36 @@
                     tools:ignore="FragmentTagUsage" />
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Recent Breadcrumbs"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="32dp"
                 android:layout_marginStart="20dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@color/orange_variant"
-                tools:ignore="HardcodedText" />
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_friends" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Friends' Trips"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:textColor="#3A2D24"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_home_trips"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false" />
 
@@ -72,16 +110,5 @@
         android:layout_gravity="center"
         android:visibility="gone"
         android:indeterminateTint="@color/orange_primary" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_trip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        app:srcCompat="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/orange_variant"
-        app:tint="@color/white"
-        android:contentDescription="Add new trip" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
