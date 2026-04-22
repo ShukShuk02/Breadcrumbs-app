@@ -1,5 +1,6 @@
 package com.breadcrumbs.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -43,10 +44,16 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         tripId = arguments?.getString("tripId")
         val tripName = arguments?.getString("tripName") ?: "Paris Adventure"
 
-        val isMyTrip = false
+        val isMyTrip = arguments?.getBoolean("isMyTrip") ?: true
 
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
+        }
+
+        binding.btnShare.setOnClickListener {
+            tripId?.let { id ->
+                shareTrip(id, tripName)
+            }
         }
 
         binding.tvDetailTitle.text = tripName
@@ -55,9 +62,11 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         if (isMyTrip) {
             binding.llFriendBadge.visibility = View.GONE
             binding.cvSharedWithYou.visibility = View.GONE
+            binding.btnShareCard.visibility = View.VISIBLE
         } else {
             binding.llFriendBadge.visibility = View.VISIBLE
             binding.cvSharedWithYou.visibility = View.VISIBLE
+            binding.btnShareCard.visibility = View.GONE
             binding.tvFriendName.text = "Sarah's trip"
             binding.tvFriendInitial.text = "S"
         }
@@ -72,16 +81,29 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         loadData()
     }
 
+    private fun shareTrip(tripId: String, tripName: String) {
+        val deepLinkUri = "breadcrumbs://trip/$tripId"
+        val shareText = "Check out my trip '$tripName' on Breadcrumbs!\n$deepLinkUri"
+
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, "Share Trip")
+        startActivity(shareIntent)
+    }
+
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.pois.collectLatest { pois ->
                 _binding?.let { b ->
-                    // יצירת רשימת דמו לבדיקה אם הרשימה מה-DB ריקה
                     val displayList = if (pois.isEmpty()) {
                         listOf(
                             Poi(
                                 id = "1",
-                                description = "The Eiffel Tower at sunset was absolutely magical! 🗼",
+                                description = "The Eiffel Tower at sunset was absolutely magical! \uD83D\uDDFC",
                                 locationName = "Eiffel Tower",
                                 imageUrl = "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=500",
                                 latitude = 48.8584,

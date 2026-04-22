@@ -39,6 +39,8 @@
         <argument
             android:name="tripId"
             app:argType="string" />
+        <deepLink
+            app:uri="breadcrumbs://trip/{tripId}" />
         <action
             android:id="@+id/action_tripDetail_to_addPoi"
             app:destination="@id/addPoiFragment" />

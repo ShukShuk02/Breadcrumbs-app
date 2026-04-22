@@ -56,7 +56,7 @@
                     android:textColor="#3A2D24"
                     android:textSize="22sp"
                     app:layout_constraintBottom_toTopOf="@+id/tvDetailDate"
-                    app:layout_constraintEnd_toStartOf="@+id/llFriendBadge"
+                    app:layout_constraintEnd_toStartOf="@+id/flRightActions"
                     app:layout_constraintStart_toEndOf="@+id/btnBackCard"
                     app:layout_constraintTop_toTopOf="@+id/btnBackCard"
                     tools:text="Paris Adventure" />
@@ -70,44 +70,71 @@
                     android:textColor="#8D7D73"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="@+id/btnBackCard"
-                    app:layout_constraintEnd_toStartOf="@+id/llFriendBadge"
+                    app:layout_constraintEnd_toStartOf="@+id/flRightActions"
                     app:layout_constraintStart_toEndOf="@+id/btnBackCard"
                     app:layout_constraintTop_toBottomOf="@+id/tvDetailTitle"
                     tools:text="December 2024" />
 
-                <LinearLayout
-                    android:id="@+id/llFriendBadge"
+                <FrameLayout
+                    android:id="@+id/flRightActions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pill_cream"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="8dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
-                    <TextView
-                        android:id="@+id/tvFriendInitial"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:background="@drawable/bg_initial_badge"
-                        android:fontFamily="sans-serif-medium"
-                        android:gravity="center"
-                        android:textColor="#FFFFFF"
-                        android:textSize="10sp"
-                        tools:text="S" />
-
-                    <TextView
-                        android:id="@+id/tvFriendName"
+                    <LinearLayout
+                        android:id="@+id/llFriendBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:textColor="#F28522"
-                        android:textSize="13sp"
-                        tools:text="Sarah's trip" />
-                </LinearLayout>
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_pill_cream"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tvFriendInitial"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:background="@drawable/bg_initial_badge"
+                            android:fontFamily="sans-serif-medium"
+                            android:gravity="center"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp"
+                            tools:text="S" />
+
+                        <TextView
+                            android:id="@+id/tvFriendName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:textColor="#F28522"
+                            android:textSize="13sp"
+                            tools:text="Sarah's trip" />
+                    </LinearLayout>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnShareCard"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="#FDF1E6">
+
+                        <ImageView
+                            android:id="@+id/btnShare"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="12dp"
+                            android:src="@drawable/ic_share" />
+                    </com.google.android.material.card.MaterialCardView>
+                </FrameLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.card.MaterialCardView
