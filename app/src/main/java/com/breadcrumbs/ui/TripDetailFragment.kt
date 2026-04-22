@@ -2,7 +2,6 @@ package com.breadcrumbs.ui
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -42,12 +41,26 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         _binding = FragmentTripDetailBinding.bind(view)
 
         tripId = arguments?.getString("tripId")
-        val tripName = arguments?.getString("tripName") ?: "Trip Details"
+        val tripName = arguments?.getString("tripName") ?: "Paris Adventure"
 
-        binding.toolbar.setNavigationOnClickListener {
+        val isMyTrip = false
+
+        binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
-        binding.toolbar.title = tripName
+
+        binding.tvDetailTitle.text = tripName
+        binding.tvDetailDate.text = "December 2024"
+
+        if (isMyTrip) {
+            binding.llFriendBadge.visibility = View.GONE
+            binding.cvSharedWithYou.visibility = View.GONE
+        } else {
+            binding.llFriendBadge.visibility = View.VISIBLE
+            binding.cvSharedWithYou.visibility = View.VISIBLE
+            binding.tvFriendName.text = "Sarah's trip"
+            binding.tvFriendInitial.text = "S"
+        }
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -56,13 +69,6 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         binding.rvPois.layoutManager = LinearLayoutManager(context)
         binding.rvPois.adapter = adapter
 
-        binding.fabAddPoi.setOnClickListener {
-            tripId?.let {
-                val bundle = bundleOf("tripId" to it)
-                findNavController().navigate(R.id.action_tripDetail_to_addPoi, bundle)
-            }
-        }
-
         loadData()
     }
 
@@ -70,9 +76,39 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.pois.collectLatest { pois ->
                 _binding?.let { b ->
-                    currentPois = pois
-                    (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
-                    updateMap(pois)
+                    // יצירת רשימת דמו לבדיקה אם הרשימה מה-DB ריקה
+                    val displayList = if (pois.isEmpty()) {
+                        listOf(
+                            Poi(
+                                id = "1",
+                                description = "The Eiffel Tower at sunset was absolutely magical! 🗼",
+                                locationName = "Eiffel Tower",
+                                imageUrl = "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=500",
+                                latitude = 48.8584,
+                                longitude = 2.2945
+                            ),
+                            Poi(
+                                id = "2",
+                                description = "Best croissants I've ever had at this little café.",
+                                locationName = "Le Marais",
+                                imageUrl = "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=500",
+                                latitude = 48.8575,
+                                longitude = 2.3592
+                            )
+                        )
+                    } else {
+                        pois
+                    }
+
+                    currentPois = displayList
+                    (b.rvPois.adapter as? PoiAdapter)?.submitList(displayList)
+
+                    b.tvStatPhotos.text = "24"
+                    b.tvStatDays.text = "5"
+                    b.tvStatFriends.text = "3"
+                    b.tvMapLocationsCount.text = "${displayList.size} locations"
+
+                    updateMap(displayList)
                 }
             }
         }
@@ -111,7 +147,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
         try {
             val bounds = builder.build()
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50))
         } catch (e: Exception) {
             if (pois.isNotEmpty()) {
                 val p = pois[0]

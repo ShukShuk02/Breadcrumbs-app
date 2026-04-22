@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.breadcrumbs.R
 import com.breadcrumbs.databinding.ItemPoiBinding
 import com.breadcrumbs.model.Poi
 import com.bumptech.glide.Glide
@@ -20,30 +21,36 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
     }
 
     override fun onBindViewHolder(holder: PoiViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val isLastItem = position == itemCount - 1
+        holder.bind(getItem(position), isLastItem)
     }
 
     class PoiViewHolder(private val binding: ItemPoiBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(poi: Poi) {
+        fun bind(poi: Poi, isLastItem: Boolean) {
             binding.tvPoiDescription.text = poi.description
             binding.tvPoiLocation.text = poi.locationName
-            
-            val dateFormat = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
+
+            val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
             val dateStr = if (poi.timestamp != null) {
                 dateFormat.format(poi.timestamp.toDate())
             } else {
                 ""
             }
             binding.tvPoiDate.text = dateStr
-            
+
             if (poi.imageUrl.isNotEmpty()) {
-                binding.ivPoiImage.visibility = View.VISIBLE
                 Glide.with(binding.ivPoiImage.context)
                     .load(poi.imageUrl)
                     .centerCrop()
                     .into(binding.ivPoiImage)
             } else {
-                binding.ivPoiImage.visibility = View.GONE
+                binding.ivPoiImage.setImageResource(R.drawable.ic_image_placeholder)
+            }
+
+            if (isLastItem) {
+                binding.timelineLine.visibility = View.INVISIBLE
+            } else {
+                binding.timelineLine.visibility = View.VISIBLE
             }
         }
     }
