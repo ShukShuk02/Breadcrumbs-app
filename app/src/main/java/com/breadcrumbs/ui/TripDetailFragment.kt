@@ -22,6 +22,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCallback {
 
@@ -42,8 +44,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         _binding = FragmentTripDetailBinding.bind(view)
 
         tripId = arguments?.getString("tripId")
-        val tripName = arguments?.getString("tripName") ?: "Paris Adventure"
-
+        val tripName = arguments?.getString("tripName") ?: ""
         val isMyTrip = arguments?.getBoolean("isMyTrip") ?: true
 
         binding.btnBack.setOnClickListener {
@@ -57,7 +58,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         }
 
         binding.tvDetailTitle.text = tripName
-        binding.tvDetailDate.text = "December 2024"
+        binding.tvDetailDate.text = ""
 
         if (isMyTrip) {
             binding.llFriendBadge.visibility = View.GONE
@@ -67,8 +68,8 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
             binding.llFriendBadge.visibility = View.VISIBLE
             binding.cvSharedWithYou.visibility = View.VISIBLE
             binding.btnShareCard.visibility = View.GONE
-            binding.tvFriendName.text = "Sarah's trip"
-            binding.tvFriendInitial.text = "S"
+            binding.tvFriendName.text = "Shared Trip"
+            binding.tvFriendInitial.text = "F"
         }
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -99,38 +100,34 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.pois.collectLatest { pois ->
                 _binding?.let { b ->
-                    val displayList = if (pois.isEmpty()) {
-                        listOf(
-                            Poi(
-                                id = "1",
-                                description = "The Eiffel Tower at sunset was absolutely magical! \uD83D\uDDFC",
-                                locationName = "Eiffel Tower",
-                                imageUrl = "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=500",
-                                latitude = 48.8584,
-                                longitude = 2.2945
-                            ),
-                            Poi(
-                                id = "2",
-                                description = "Best croissants I've ever had at this little café.",
-                                locationName = "Le Marais",
-                                imageUrl = "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=500",
-                                latitude = 48.8575,
-                                longitude = 2.3592
-                            )
-                        )
+                    currentPois = pois
+                    (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
+
+                    val photosCount = pois.count { it.imageUrl.isNotEmpty() }
+
+                    val timestamps = pois.mapNotNull { it.timestamp?.seconds }
+                    val daysCount = if (timestamps.isNotEmpty()) {
+                        val min = timestamps.minOrNull() ?: 0
+                        val max = timestamps.maxOrNull() ?: 0
+                        ((max - min) / (60 * 60 * 24)).toInt() + 1
                     } else {
-                        pois
+                        0
                     }
 
-                    currentPois = displayList
-                    (b.rvPois.adapter as? PoiAdapter)?.submitList(displayList)
+                    b.tvStatPhotos.text = photosCount.toString()
+                    b.tvStatDays.text = daysCount.toString()
+                    b.tvStatFriends.text = "0"
+                    b.tvMapLocationsCount.text = "${pois.size} locations"
 
-                    b.tvStatPhotos.text = "24"
-                    b.tvStatDays.text = "5"
-                    b.tvStatFriends.text = "3"
-                    b.tvMapLocationsCount.text = "${displayList.size} locations"
+                    if (pois.isNotEmpty()) {
+                        val firstPoiDate = pois.minByOrNull { it.timestamp?.seconds ?: Long.MAX_VALUE }?.timestamp?.toDate()
+                        if (firstPoiDate != null) {
+                            val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+                            b.tvDetailDate.text = sdf.format(firstPoiDate)
+                        }
+                    }
 
-                    updateMap(displayList)
+                    updateMap(pois)
                 }
             }
         }
@@ -138,6 +135,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        googleMap?.uiSettings?.isZoomControlsEnabled = true
         if (currentPois.isNotEmpty()) {
             updateMap(currentPois)
         }
@@ -169,7 +167,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
         try {
             val bounds = builder.build()
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50))
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         } catch (e: Exception) {
             if (pois.isNotEmpty()) {
                 val p = pois[0]
