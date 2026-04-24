@@ -101,8 +101,12 @@ class BreadcrumbsRepository(
     suspend fun uploadImage(uri: Uri, path: String): String {
         return withContext(Dispatchers.IO) {
             val ref = storage.reference.child(path)
-            ref.putFile(uri).await()
-            ref.downloadUrl.await().toString()
+            try {
+                ref.putFile(uri).await()
+                return@withContext ref.downloadUrl.await().toString()
+            } catch (e: Exception) {
+                throw Exception("Image upload failed: ${e.message}")
+            }
         }
     }
 }
