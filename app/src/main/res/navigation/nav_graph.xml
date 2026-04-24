@@ -56,6 +56,15 @@
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_addPoi_to_pickLocation"
+            app:destination="@id/pickLocationFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/pickLocationFragment"
+        android:name="com.breadcrumbs.ui.PickLocationFragment"
+        android:label="Pick Location"
+        tools:layout="@layout/fragment_pick_location" />
 
 </navigation>
