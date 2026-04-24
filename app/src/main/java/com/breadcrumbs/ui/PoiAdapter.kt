@@ -48,9 +48,9 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
             }
 
             if (isLastItem) {
-                binding.timelineLine.visibility = View.INVISIBLE
+                binding.timelineLineBottom.visibility = View.INVISIBLE
             } else {
-                binding.timelineLine.visibility = View.VISIBLE
+                binding.timelineLineBottom.visibility = View.VISIBLE
             }
         }
     }

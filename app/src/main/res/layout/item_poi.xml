@@ -7,42 +7,25 @@
     android:layout_height="wrap_content"
     android:background="#FEFAF6">
 
-    <View
-        android:id="@+id/timelineLine"
-        android:layout_width="2dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="24dp"
-        android:background="#EAD8C8"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <View
-        android:id="@+id/timelineDot"
-        android:layout_width="12dp"
+    <Space
+        android:id="@+id/spacerTop"
+        android:layout_width="match_parent"
         android:layout_height="12dp"
-        android:background="@drawable/shape_timeline_dot"
-        app:layout_constraintEnd_toEndOf="@+id/timelineLine"
-        app:layout_constraintStart_toStartOf="@+id/timelineLine"
-        app:layout_constraintTop_toTopOf="@+id/cardPoi"
-        android:layout_marginTop="20dp" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardPoi"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="16dp"
         app:cardBackgroundColor="#F7EFE9"
         app:cardCornerRadius="20dp"
         app:cardElevation="0dp"
         app:strokeWidth="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/timelineLine"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toEndOf="@+id/timelineDot"
+        app:layout_constraintTop_toBottomOf="@+id/spacerTop">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -123,4 +106,42 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <Space
+        android:id="@+id/spacerBottom"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardPoi" />
+
+    <View
+        android:id="@+id/timelineDot"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/shape_timeline_dot"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/cardPoi" />
+
+    <View
+        android:id="@+id/timelineLineTop"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:background="#EAD8C8"
+        app:layout_constraintBottom_toTopOf="@+id/timelineDot"
+        app:layout_constraintEnd_toEndOf="@+id/timelineDot"
+        app:layout_constraintStart_toStartOf="@+id/timelineDot"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/timelineLineBottom"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:background="#EAD8C8"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/timelineDot"
+        app:layout_constraintStart_toStartOf="@+id/timelineDot"
+        app:layout_constraintTop_toBottomOf="@+id/timelineDot" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
