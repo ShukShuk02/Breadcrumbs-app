@@ -17,7 +17,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -44,11 +43,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.allTrips.collectLatest { trips ->
-                val friendsTrips = trips.filter { it.userId != currentUserId }
+            viewModel.tripsWithUsers.collectLatest { tripsWithUsers ->
+                val friendsTrips = tripsWithUsers.filter { it.first.userId != currentUserId }
 
                 tripAdapter.submitList(friendsTrips)
-                updateMapMarkers(friendsTrips)
+                updateMapMarkers(friendsTrips.map { it.first })
             }
         }
 
@@ -60,10 +59,11 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-        tripAdapter = TripAdapter { trip ->
+        tripAdapter = TripAdapter(showUserInfo = true) { trip ->
             val bundle = Bundle().apply {
                 putString("tripId", trip.id)
                 putString("tripName", trip.title)
+                putBoolean("isMyTrip", false)
             }
             findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
         }
@@ -88,13 +88,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
 
     private fun updateMapMarkers(trips: List<Trip>) {
         mMap?.clear()
-        val dotIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_map_dot)
-
-        trips.forEach { trip ->
-            try {
-            } catch (_: Exception) {
-            }
-        }
+        trips.forEach { _ -> }
     }
 
     override fun onDestroyView() {

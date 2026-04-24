@@ -5,23 +5,36 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.breadcrumbs.data.BreadcrumbsRepository
 import com.breadcrumbs.model.Trip
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
+import com.breadcrumbs.model.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeViewModel(private val repository: BreadcrumbsRepository) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    val allTrips: StateFlow<List<Trip>> = repository.allTrips.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    val tripsWithUsers: StateFlow<List<Pair<Trip, User?>>> = repository.allTrips
+        .flatMapLatest { trips ->
+            flow {
+                _isLoading.value = true
+                val combinedList = withContext(Dispatchers.IO) {
+                    trips.map { trip ->
+                        val user = repository.getUser(trip.userId)
+                        Pair(trip, user)
+                    }
+                }
+                emit(combinedList)
+                _isLoading.value = false
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         refresh()
