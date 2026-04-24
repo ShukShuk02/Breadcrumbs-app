@@ -5,6 +5,7 @@ import android.util.Log
 import com.breadcrumbs.data.local.BreadcrumbsDao
 import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
+import com.breadcrumbs.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
@@ -39,6 +40,17 @@ class BreadcrumbsRepository(
     fun getUserTrips(userId: String): Flow<List<Trip>> {
         return dao.getUserTrips(userId).map { localList ->
             localList.map { it.toTrip() }
+        }
+    }
+
+    suspend fun getUser(userId: String): User? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val snapshot = firestore.collection("users").document(userId).get().await()
+                snapshot.toObject(User::class.java)
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
@@ -95,6 +107,21 @@ class BreadcrumbsRepository(
                 .set(poi).await()
 
             dao.insertPoi(poi.toLocalPoi())
+
+            if (poi.imageUrl.isNotEmpty()) {
+                val tripRef = firestore.collection("trips").document(poi.tripId)
+                val tripSnapshot = tripRef.get().await()
+                val currentCover = tripSnapshot.getString("coverImageUrl")
+
+                if (currentCover.isNullOrEmpty()) {
+                    tripRef.update("coverImageUrl", poi.imageUrl).await()
+
+                    val updatedTripSnapshot = tripRef.get().await()
+                    updatedTripSnapshot.toObject(Trip::class.java)?.let { updatedTrip ->
+                        dao.insertTrip(updatedTrip.toLocalTrip())
+                    }
+                }
+            }
         }
     }
 
