@@ -1,16 +1,15 @@
 package com.breadcrumbs.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
-import com.breadcrumbs.data.remote.FirebaseManager
 import com.breadcrumbs.databinding.FragmentTripDetailBinding
 import com.breadcrumbs.model.Poi
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -23,6 +22,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCallback {
 
@@ -30,20 +31,46 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
     private val binding get() = _binding!!
     private var googleMap: GoogleMap? = null
     private var tripId: String? = null
-    private val firebaseManager = FirebaseManager()
     private var currentPois: List<Poi> = emptyList()
+
+    private val viewModel: TripDetailViewModel by viewModels {
+        val app = requireActivity().application as BreadcrumbsApp
+        val tid = arguments?.getString("tripId") ?: ""
+        TripDetailViewModelFactory(app.repository, tid)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentTripDetailBinding.bind(view)
 
         tripId = arguments?.getString("tripId")
-        val tripName = arguments?.getString("tripName") ?: "Trip Details"
+        val tripName = arguments?.getString("tripName") ?: ""
+        val isMyTrip = arguments?.getBoolean("isMyTrip") ?: true
 
-        binding.toolbar.setNavigationOnClickListener {
+        binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
-        binding.toolbar.title = tripName
+
+        binding.btnShare.setOnClickListener {
+            tripId?.let { id ->
+                shareTrip(id, tripName)
+            }
+        }
+
+        binding.tvDetailTitle.text = tripName
+        binding.tvDetailDate.text = ""
+
+        if (isMyTrip) {
+            binding.llFriendBadge.visibility = View.GONE
+            binding.cvSharedWithYou.visibility = View.GONE
+            binding.btnShareCard.visibility = View.VISIBLE
+        } else {
+            binding.llFriendBadge.visibility = View.VISIBLE
+            binding.cvSharedWithYou.visibility = View.VISIBLE
+            binding.btnShareCard.visibility = View.GONE
+            binding.tvFriendName.text = "Shared Trip"
+            binding.tvFriendInitial.text = "F"
+        }
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -52,26 +79,55 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         binding.rvPois.layoutManager = LinearLayoutManager(context)
         binding.rvPois.adapter = adapter
 
-        binding.fabAddPoi.setOnClickListener {
-            tripId?.let {
-                val bundle = bundleOf("tripId" to it)
-                findNavController().navigate(R.id.action_tripDetail_to_addPoi, bundle)
-            }
-        }
-
         loadData()
     }
 
+    private fun shareTrip(tripId: String, tripName: String) {
+        val deepLinkUri = "breadcrumbs://trip/$tripId"
+        val shareText = "Check out my trip '$tripName' on Breadcrumbs!\n$deepLinkUri"
+
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, "Share Trip")
+        startActivity(shareIntent)
+    }
+
     private fun loadData() {
-        val tid = tripId ?: return
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                firebaseManager.getPoisForTrip_Flow(tid).collectLatest { pois ->
-                    _binding?.let { b ->
-                        currentPois = pois
-                        (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
-                        updateMap(pois)
+            viewModel.pois.collectLatest { pois ->
+                _binding?.let { b ->
+                    currentPois = pois
+                    (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
+
+                    val photosCount = pois.count { it.imageUrl.isNotEmpty() }
+
+                    val timestamps = pois.mapNotNull { it.timestamp?.seconds }
+                    val daysCount = if (timestamps.isNotEmpty()) {
+                        val min = timestamps.minOrNull() ?: 0
+                        val max = timestamps.maxOrNull() ?: 0
+                        ((max - min) / (60 * 60 * 24)).toInt() + 1
+                    } else {
+                        0
                     }
+
+                    b.tvStatPhotos.text = photosCount.toString()
+                    b.tvStatDays.text = daysCount.toString()
+                    b.tvStatFriends.text = "0"
+                    b.tvMapLocationsCount.text = "${pois.size} locations"
+
+                    if (pois.isNotEmpty()) {
+                        val firstPoiDate = pois.minByOrNull { it.timestamp?.seconds ?: Long.MAX_VALUE }?.timestamp?.toDate()
+                        if (firstPoiDate != null) {
+                            val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+                            b.tvDetailDate.text = sdf.format(firstPoiDate)
+                        }
+                    }
+
+                    updateMap(pois)
                 }
             }
         }
@@ -79,6 +135,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        googleMap?.uiSettings?.isZoomControlsEnabled = true
         if (currentPois.isNotEmpty()) {
             updateMap(currentPois)
         }
@@ -105,18 +162,17 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
             polylineOptions.add(position)
             builder.include(position)
         }
-        
+
         map.addPolyline(polylineOptions)
-        
+
         try {
             val bounds = builder.build()
-            // Padding of 150 to ensure markers aren't on the edge
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         } catch (e: Exception) {
-             if (pois.isNotEmpty()) {
-                 val p = pois[0]
-                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(p.latitude, p.longitude), 15f))
-             }
+            if (pois.isNotEmpty()) {
+                val p = pois[0]
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(p.latitude, p.longitude), 15f))
+            }
         }
     }
 

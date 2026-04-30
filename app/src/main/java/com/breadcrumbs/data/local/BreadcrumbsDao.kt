@@ -28,6 +28,9 @@ interface BreadcrumbsDao {
     @Query("SELECT * FROM trips WHERE id = :tripId")
     suspend fun getTrip(tripId: String): LocalTrip?
 
+    @Query("SELECT * FROM trips WHERE userId = :userId ORDER BY startDate DESC")
+    fun getUserTrips(userId: String): kotlinx.coroutines.flow.Flow<List<LocalTrip>>
+
     // POIs
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPoi(poi: LocalPoi)

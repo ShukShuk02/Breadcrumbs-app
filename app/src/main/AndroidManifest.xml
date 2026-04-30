@@ -19,7 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Breadcrumbs"
         tools:targetApi="31">
-        
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
@@ -29,8 +29,14 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="breadcrumbs" android:host="trip" />
             </intent-filter>
         </activity>
     </application>

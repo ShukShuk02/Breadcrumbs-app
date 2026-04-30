@@ -3,7 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/profileFragment">
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.breadcrumbs.ui.HomeFragment"
+        android:label="Discover"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_addPoi"
+            app:destination="@id/addPoiFragment" />
+        <action
+            android:id="@+id/action_home_to_tripDetail"
+            app:destination="@id/tripDetailFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"
@@ -11,18 +24,12 @@
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
         <action
-            android:id="@+id/action_profile_to_createTrip"
-            app:destination="@id/createTripFragment" />
+            android:id="@+id/action_profile_to_addPoi"
+            app:destination="@id/addPoiFragment" />
         <action
             android:id="@+id/action_profile_to_tripDetail"
             app:destination="@id/tripDetailFragment" />
     </fragment>
-
-    <fragment
-        android:id="@+id/createTripFragment"
-        android:name="com.breadcrumbs.ui.CreateTripFragment"
-        android:label="Create Trip"
-        tools:layout="@layout/fragment_create_trip" />
 
     <fragment
         android:id="@+id/tripDetailFragment"
@@ -32,6 +39,8 @@
         <argument
             android:name="tripId"
             app:argType="string" />
+        <deepLink
+            app:uri="breadcrumbs://trip/{tripId}" />
         <action
             android:id="@+id/action_tripDetail_to_addPoi"
             app:destination="@id/addPoiFragment" />
@@ -44,6 +53,18 @@
         tools:layout="@layout/fragment_add_poi">
         <argument
             android:name="tripId"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_addPoi_to_pickLocation"
+            app:destination="@id/pickLocationFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/pickLocationFragment"
+        android:name="com.breadcrumbs.ui.PickLocationFragment"
+        android:label="Pick Location"
+        tools:layout="@layout/fragment_pick_location" />
+
 </navigation>
