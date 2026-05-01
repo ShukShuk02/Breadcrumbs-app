@@ -6,6 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.breadcrumbs.BreadcrumbsApp
@@ -34,6 +35,14 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private fun setupUI() {
         binding.tvUserName.text = "My Trips"
         binding.tvUserBio.text = "Capturing my world, one crumb at a time."
+
+        binding.btnLogout.setOnClickListener {
+            viewModel.logout()
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build()
+            findNavController().navigate(R.id.loginFragment, null, navOptions)
+        }
 
         val adapter = TripAdapter(showUserInfo = false) { trip ->
             val bundle = bundleOf(

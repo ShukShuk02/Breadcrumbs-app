@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.breadcrumbs.data.BreadcrumbsRepository
 import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,10 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
             initialValue = emptyList()
         )
     } ?: MutableStateFlow(emptyList())
+
+    fun logout() {
+        FirebaseAuth.getInstance().signOut()
+    }
 }
 
 class ProfileViewModelFactory(private val repository: BreadcrumbsRepository) : ViewModelProvider.Factory {
