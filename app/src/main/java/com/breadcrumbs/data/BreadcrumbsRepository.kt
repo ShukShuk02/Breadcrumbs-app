@@ -8,7 +8,6 @@ import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
@@ -21,12 +20,7 @@ class BreadcrumbsRepository(
     private val dao: BreadcrumbsDao
 ) {
 
-    private val firestore = FirebaseFirestore.getInstance().apply {
-        firestoreSettings = FirebaseFirestoreSettings.Builder()
-            .setLocalCacheSettings(com.google.firebase.firestore.MemoryCacheSettings.newBuilder().build())
-            .build()
-    }
-
+    private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
 
