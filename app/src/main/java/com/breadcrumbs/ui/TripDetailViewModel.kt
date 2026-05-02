@@ -5,8 +5,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.breadcrumbs.data.BreadcrumbsRepository
 import com.breadcrumbs.model.Poi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class TripDetailViewModel(
@@ -14,16 +19,27 @@ class TripDetailViewModel(
     private val tripId: String
 ) : ViewModel() {
 
-    val pois: Flow<List<Poi>> = if (tripId.isNotEmpty()) {
-        repository.getPoisForTrip(tripId)
-    } else {
-        emptyFlow()
-    }
+    val pois: StateFlow<List<Poi>> = repository.getPoisForTrip(tripId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
-    init {
-        if (tripId.isNotEmpty()) {
-            viewModelScope.launch {
-                repository.refreshPoisForTrip(tripId)
+    private val _tripDeletedEvent = MutableSharedFlow<Unit>()
+    val tripDeletedEvent: SharedFlow<Unit> = _tripDeletedEvent.asSharedFlow()
+
+    fun deletePoi(poi: Poi) {
+        viewModelScope.launch {
+            try {
+                repository.deletePoi(poi.tripId, poi.id)
+
+                val remainingPois = repository.getPoisForTrip(poi.tripId).first()
+                if (remainingPois.isEmpty()) {
+                    repository.deleteTrip(poi.tripId)
+                    _tripDeletedEvent.emit(Unit)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

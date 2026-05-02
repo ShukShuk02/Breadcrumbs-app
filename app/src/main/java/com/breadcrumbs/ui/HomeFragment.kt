@@ -59,14 +59,19 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
     }
 
     private fun setupRecyclerView() {
-        tripAdapter = TripAdapter(showUserInfo = true) { trip ->
-            val bundle = Bundle().apply {
-                putString("tripId", trip.id)
-                putString("tripName", trip.title)
-                putBoolean("isMyTrip", false)
+        tripAdapter = TripAdapter(
+            currentUserId = FirebaseAuth.getInstance().currentUser?.uid,
+            showUserInfo = true,
+            onTripClicked = { trip ->
+                val bundle = Bundle().apply {
+                    putString("tripId", trip.id)
+                    putString("tripName", trip.title)
+                    putBoolean("isMyTrip", false)
+                }
+                findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
             }
-            findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
-        }
+        )
+
         binding.rvHomeTrips.apply {
             adapter = tripAdapter
             layoutManager = GridLayoutManager(requireContext(), 3)

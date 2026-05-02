@@ -29,6 +29,9 @@
         <action
             android:id="@+id/action_profile_to_tripDetail"
             app:destination="@id/tripDetailFragment" />
+        <action
+            android:id="@+id/action_profile_to_addTrip"
+            app:destination="@id/addTripFragment" />
     </fragment>
 
     <fragment
@@ -59,6 +62,22 @@
         <action
             android:id="@+id/action_addPoi_to_pickLocation"
             app:destination="@id/pickLocationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addTripFragment"
+        android:name="com.breadcrumbs.ui.AddTripFragment"
+        android:label="Add Trip"
+        tools:layout="@layout/fragment_add_trip">
+        <argument
+            android:name="tripId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="isEditMode"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
 
     <fragment

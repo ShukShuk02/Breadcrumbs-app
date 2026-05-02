@@ -1,8 +1,10 @@
 package com.breadcrumbs.ui
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -75,11 +77,41 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        val adapter = PoiAdapter()
+        val adapter = PoiAdapter(
+            isMyTrip = isMyTrip,
+            onEditClicked = { poi ->
+                val bundle = bundleOf(
+                    "tripId" to poi.tripId,
+                    "poiId" to poi.id
+                )
+                findNavController().navigate(R.id.action_tripDetail_to_addPoi, bundle)
+            },
+            onDeleteClicked = { poi ->
+                showDeleteConfirmationDialog(poi)
+            }
+        )
+
         binding.rvPois.layoutManager = LinearLayoutManager(context)
         binding.rvPois.adapter = adapter
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.tripDeletedEvent.collect {
+                findNavController().navigateUp()
+            }
+        }
+
         loadData()
+    }
+
+    private fun showDeleteConfirmationDialog(poi: Poi) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Post")
+            .setMessage("Are you sure you want to delete this post?")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.deletePoi(poi)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun shareTrip(tripId: String, tripName: String) {
