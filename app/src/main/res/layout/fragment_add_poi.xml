@@ -28,7 +28,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <TextView
-        android:id="@+id/tv_header_title"
+        android:id="@+id/tvAddPoiTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-black"
@@ -153,12 +153,19 @@
             android:layout_height="match_parent"
             android:paddingHorizontal="20dp">
 
+            <!-- שימוש ב-Barrier כדי למנוע חפיפה -->
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/location_status_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="end"
+                app:constraint_referenced_ids="pb_location,iv_loc_icon" />
+
             <ProgressBar
                 android:id="@+id/pb_location"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:indeterminateTint="#F28522"
-                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -168,23 +175,25 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@drawable/ic_nav_arrow_hollow"
-                android:visibility="gone"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/tv_location_name"
+                android:id="@+id/tvLocationName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="12dp"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="Detecting location..."
                 android:textColor="#3A2D24"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/iv_loc_pin"
-                app:layout_constraintStart_toEndOf="@+id/pb_location"
+                app:layout_constraintStart_toEndOf="@id/location_status_barrier"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -37,7 +38,10 @@ class AddPoiViewModel(private val repository: BreadcrumbsRepository) : ViewModel
         )
     } ?: MutableStateFlow(emptyList())
 
+    fun getPoiFlow(poiId: String) = repository.getPoiFlow(poiId)
+
     fun savePoi(
+        poiId: String? = null,
         existingTripId: String?,
         newTripTitle: String?,
         description: String,
@@ -49,16 +53,6 @@ class AddPoiViewModel(private val repository: BreadcrumbsRepository) : ViewModel
         val userId = repository.currentUserId
         if (userId == null) {
             _state.value = AddPoiState.Error("Must be logged in")
-            return
-        }
-
-        if (description.isBlank() && imageUri == null) {
-            _state.value = AddPoiState.Error("Please add a photo or description")
-            return
-        }
-
-        if (existingTripId == null && newTripTitle.isNullOrBlank()) {
-            _state.value = AddPoiState.Error("Please select a trip or create a new one")
             return
         }
 
@@ -80,24 +74,33 @@ class AddPoiViewModel(private val repository: BreadcrumbsRepository) : ViewModel
                     finalTripId = newTrip.id
                 }
 
-                var imageUrl = ""
-                if (imageUri != null) {
-                    val path = "pois/${UUID.randomUUID()}.jpg"
-                    imageUrl = repository.uploadImage(imageUri, path)
+                if (finalTripId == null) {
+                    _state.value = AddPoiState.Error("Please select a trip")
+                    return@launch
                 }
 
-                val newPoi = Poi(
-                    id = UUID.randomUUID().toString(),
-                    tripId = finalTripId!!,
+                var finalImageUrl = ""
+
+                if (imageUri != null) {
+                    val path = "pois/${UUID.randomUUID()}.jpg"
+                    finalImageUrl = repository.uploadImage(imageUri, path)
+                } else if (poiId != null) {
+                    val existingPoi = repository.getPoiFlow(poiId).firstOrNull()
+                    finalImageUrl = existingPoi?.imageUrl ?: ""
+                }
+
+                val poi = Poi(
+                    id = poiId ?: UUID.randomUUID().toString(),
+                    tripId = finalTripId,
                     description = description,
-                    imageUrl = imageUrl,
+                    imageUrl = finalImageUrl,
                     latitude = lat,
                     longitude = lng,
                     locationName = locationName,
                     timestamp = Timestamp.now()
                 )
 
-                repository.addPoiToTrip(newPoi)
+                repository.addPoiToTrip(poi)
                 _state.value = AddPoiState.Success
 
             } catch (e: Exception) {

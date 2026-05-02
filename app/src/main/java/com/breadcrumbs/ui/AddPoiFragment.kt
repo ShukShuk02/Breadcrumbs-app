@@ -22,13 +22,15 @@ import androidx.navigation.fragment.findNavController
 import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
 import com.breadcrumbs.databinding.FragmentAddPoiBinding
+import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 @SuppressLint("SetTextI18n")
@@ -51,17 +53,16 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
     private var currentLng: Double = 0.0
     private var currentLocationName: String = ""
     private var selectedImageUri: Uri? = null
+    private var editingPoiId: String? = null
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
             selectedImageUri = uri
-            _binding?.let { b ->
-                b.ivSelectedPhoto.setImageURI(uri)
-                b.ivSelectedPhoto.visibility = View.VISIBLE
-                b.cardPhoto.getChildAt(0).visibility = View.GONE
-            }
+            binding.ivSelectedPhoto.setImageURI(uri)
+            binding.ivSelectedPhoto.visibility = View.VISIBLE
+            binding.cardPhoto.getChildAt(0).visibility = View.GONE
         }
     }
 
@@ -71,7 +72,7 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
         if (isGranted) {
             fetchRealLocation()
         } else {
-            updateLocationUI("Location permission denied")
+            updateLocationUI("Location permission denied", true)
         }
     }
 
@@ -79,32 +80,79 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAddPoiBinding.bind(view)
 
-        // שחזור התמונה למקרה שחזרנו ממסך המפה
-        if (selectedImageUri != null) {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        editingPoiId = arguments?.getString("poiId")
+        selectedTripId = arguments?.getString("tripId")
+
+        setupEditOrAddMode()
+        setupListeners()
+        observeViewModel()
+
+        if (editingPoiId == null) {
+            if (currentLocationName.isEmpty()) {
+                checkLocationPermissionAndFetch()
+            } else {
+                updateLocationUI(currentLocationName, true)
+            }
+        }
+    }
+
+    private fun setupEditOrAddMode() {
+        if (editingPoiId != null) {
+            binding.tvAddPoiTitle.text = "Edit your Breadcrumb"
+            viewLifecycleOwner.lifecycleScope.launch {
+                val poi = viewModel.getPoiFlow(editingPoiId!!).firstOrNull()
+                poi?.let {
+                    if (binding.etDescription.text.isNullOrEmpty()) {
+                        binding.etDescription.setText(it.description)
+                    }
+
+                    if (currentLocationName.isEmpty()) {
+                        currentLocationName = it.locationName
+                        currentLat = it.latitude
+                        currentLng = it.longitude
+                        updateLocationUI(it.locationName, true)
+                    } else {
+                        updateLocationUI(currentLocationName, true)
+                    }
+
+                    if (selectedImageUri != null) {
+                        binding.ivSelectedPhoto.setImageURI(selectedImageUri)
+                        binding.ivSelectedPhoto.visibility = View.VISIBLE
+                        binding.cardPhoto.getChildAt(0).visibility = View.GONE
+                    } else if (it.imageUrl.isNotEmpty()) {
+                        Glide.with(this@AddPoiFragment)
+                            .load(it.imageUrl)
+                            .centerCrop()
+                            .into(binding.ivSelectedPhoto)
+                        binding.ivSelectedPhoto.visibility = View.VISIBLE
+                        binding.cardPhoto.getChildAt(0).visibility = View.GONE
+                    }
+                }
+            }
+        } else if (selectedImageUri != null) {
             binding.ivSelectedPhoto.setImageURI(selectedImageUri)
             binding.ivSelectedPhoto.visibility = View.VISIBLE
             binding.cardPhoto.getChildAt(0).visibility = View.GONE
         }
+    }
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-
-        val navTripId = arguments?.getString("tripId")
-        if (!navTripId.isNullOrEmpty()) {
-            selectedTripId = navTripId
-        }
-
+    private fun setupListeners() {
         parentFragmentManager.setFragmentResultListener("locationRequest", viewLifecycleOwner) { _, bundle ->
-            currentLat = bundle.getDouble("lat")
-            currentLng = bundle.getDouble("lng")
-            val address = bundle.getString("address") ?: "Selected Location"
-            currentLocationName = address
-            updateLocationUI(address)
-        }
+            val lat = bundle.getDouble("lat")
+            val lng = bundle.getDouble("lng")
+            val address = bundle.getString("address")
 
-        if (currentLocationName.isEmpty()) {
-            checkLocationPermissionAndFetch()
-        } else {
-            updateLocationUI(currentLocationName)
+            currentLat = lat
+            currentLng = lng
+
+            if (!address.isNullOrEmpty()) {
+                currentLocationName = address
+                updateLocationUI(address, true)
+            } else {
+                getAddressFromLocation(lat, lng)
+            }
         }
 
         binding.btnClose.setOnClickListener {
@@ -124,6 +172,7 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
             val newTripName = if (isCreatingNewTrip) pendingNewTripName else null
 
             viewModel.savePoi(
+                poiId = editingPoiId,
                 existingTripId = selectedTripId,
                 newTripTitle = newTripName,
                 description = description,
@@ -136,62 +185,63 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
 
         binding.etNewTripInline.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                val newName = binding.etNewTripInline.text.toString().trim()
-                hideKeyboard(binding.etNewTripInline)
-                binding.etNewTripInline.visibility = View.GONE
-
-                binding.cgTrips.getChildAt(binding.cgTrips.childCount - 1)?.visibility = View.VISIBLE
-
-                if (newName.isNotEmpty()) {
-                    isCreatingNewTrip = true
-                    selectedTripId = null
-                    pendingNewTripName = newName
-
-                    binding.cgTrips.clearCheck()
-
-                    for (i in 0 until binding.cgTrips.childCount) {
-                        val c = binding.cgTrips.getChildAt(i) as? Chip
-                        c?.let { styleExistingTripChip(it, false) }
-                    }
-
-                    val tempChip = Chip(requireContext()).apply {
-                        text = newName
-                        isCheckable = true
-                        isChecked = true
-                        isCloseIconVisible = true
-                        setOnCloseIconClickListener {
-                            binding.cgTrips.removeView(this)
-                            if (pendingNewTripName == newName) {
-                                pendingNewTripName = null
-                                isCreatingNewTrip = false
-                            }
-                        }
-                        styleExistingTripChip(this, true)
-
-                        setOnClickListener {
-                            isCreatingNewTrip = true
-                            selectedTripId = null
-                            pendingNewTripName = newName
-                            updateChipsStyling(this)
-                        }
-                    }
-                    binding.cgTrips.addView(tempChip, binding.cgTrips.childCount - 1)
-                }
+                handleNewTripCreation()
                 true
             } else {
                 false
             }
         }
+    }
 
+    private fun handleNewTripCreation() {
+        val newName = binding.etNewTripInline.text.toString().trim()
+        hideKeyboard(binding.etNewTripInline)
+        binding.etNewTripInline.visibility = View.GONE
+        binding.cgTrips.getChildAt(binding.cgTrips.childCount - 1)?.visibility = View.VISIBLE
+
+        if (newName.isNotEmpty()) {
+            isCreatingNewTrip = true
+            selectedTripId = null
+            pendingNewTripName = newName
+            binding.cgTrips.clearCheck()
+
+            for (i in 0 until binding.cgTrips.childCount) {
+                val chip = binding.cgTrips.getChildAt(i) as? Chip
+                chip?.let { styleExistingTripChip(it, false) }
+            }
+
+            val tempChip = Chip(requireContext()).apply {
+                text = newName
+                isCheckable = true
+                isChecked = true
+                isCloseIconVisible = true
+                setOnCloseIconClickListener {
+                    binding.cgTrips.removeView(this)
+                    if (pendingNewTripName == newName) {
+                        pendingNewTripName = null
+                        isCreatingNewTrip = false
+                    }
+                }
+                styleExistingTripChip(this, true)
+                setOnClickListener {
+                    isCreatingNewTrip = true
+                    selectedTripId = null
+                    pendingNewTripName = newName
+                    updateChipsStyling(this)
+                }
+            }
+            binding.cgTrips.addView(tempChip, binding.cgTrips.childCount - 1)
+        }
+    }
+
+    private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.userTrips.collectLatest { trips ->
+            viewModel.userTrips.collect { trips ->
                 binding.cgTrips.removeAllViews()
-
                 trips.forEach { trip ->
                     val chip = Chip(requireContext()).apply {
                         text = trip.title
                         isCheckable = true
-
                         val isSelectedNow = (trip.id == selectedTripId)
                         isChecked = isSelectedNow
                         styleExistingTripChip(this, isSelectedNow)
@@ -207,31 +257,12 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
                     }
                     binding.cgTrips.addView(chip)
                 }
-
-                val newTripChip = Chip(requireContext()).apply {
-                    text = "New trip"
-                    chipIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_plus_thin)
-                    iconStartPadding = 12f
-                    isCheckable = false
-                    chipStrokeWidth = 0f
-                    shapeAppearanceModel = shapeAppearanceModel.withCornerSize(50f * resources.displayMetrics.density)
-                    chipBackgroundColor = ColorStateList.valueOf("#FDF1E6".toColorInt())
-                    setTextColor("#8D7D73".toColorInt())
-
-                    setOnClickListener {
-                        visibility = View.GONE
-                        binding.etNewTripInline.visibility = View.VISIBLE
-                        binding.etNewTripInline.text.clear()
-                        binding.etNewTripInline.requestFocus()
-                        showKeyboard(binding.etNewTripInline)
-                    }
-                }
-                binding.cgTrips.addView(newTripChip)
+                addCreateNewTripChip()
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.state.collectLatest { state ->
+            viewModel.state.collect { state ->
                 when (state) {
                     is AddPoiState.Idle -> {
                         binding.pbSavePoi.visibility = View.GONE
@@ -243,7 +274,8 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
                     }
                     is AddPoiState.Success -> {
                         binding.pbSavePoi.visibility = View.GONE
-                        Toast.makeText(context, "Breadcrumb dropped!", Toast.LENGTH_SHORT).show()
+                        val msg = if (editingPoiId != null) "Breadcrumb updated!" else "Breadcrumb dropped!"
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         findNavController().navigateUp()
                     }
                     is AddPoiState.Error -> {
@@ -256,11 +288,30 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
         }
     }
 
-    private fun checkLocationPermissionAndFetch() {
-        binding.pbLocation.visibility = View.VISIBLE
-        binding.ivLocIcon.visibility = View.GONE
-        binding.tvLocationName.text = "Detecting location..."
+    private fun addCreateNewTripChip() {
+        val newTripChip = Chip(requireContext()).apply {
+            text = "New trip"
+            chipIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_plus_thin)
+            iconStartPadding = 12f
+            isCheckable = false
+            chipStrokeWidth = 0f
+            shapeAppearanceModel = shapeAppearanceModel.withCornerSize(50f * resources.displayMetrics.density)
+            chipBackgroundColor = ColorStateList.valueOf("#FDF1E6".toColorInt())
+            setTextColor("#8D7D73".toColorInt())
 
+            setOnClickListener {
+                visibility = View.GONE
+                binding.etNewTripInline.visibility = View.VISIBLE
+                binding.etNewTripInline.text.clear()
+                binding.etNewTripInline.requestFocus()
+                showKeyboard(binding.etNewTripInline)
+            }
+        }
+        binding.cgTrips.addView(newTripChip)
+    }
+
+    private fun checkLocationPermissionAndFetch() {
+        updateLocationUI("Detecting location...", false)
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -282,51 +333,53 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
                         currentLng = location.longitude
                         getAddressFromLocation(location.latitude, location.longitude)
                     } else {
-                        updateLocationUI("Location unavailable")
+                        updateLocationUI("Location unavailable", true)
                     }
                 }.addOnFailureListener {
-                    updateLocationUI("Failed to get location")
+                    updateLocationUI("Failed to get location", true)
                 }
         } catch (_: SecurityException) {
-            updateLocationUI("Permission error")
+            updateLocationUI("Permission error", true)
         }
     }
 
     @Suppress("DEPRECATION")
     private fun getAddressFromLocation(lat: Double, lng: Double) {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val geocoder = Geocoder(requireContext(), Locale.getDefault())
-                val addresses = geocoder.getFromLocation(lat, lng, 1)
-                val addressText = if (!addresses.isNullOrEmpty()) {
-                    val address = addresses[0]
-                    address.locality ?: address.subAdminArea ?: address.adminArea ?: "Unknown Location"
-                } else {
-                    "Lat: ${String.format(Locale.US, "%.4f", lat)}..."
-                }
-                currentLocationName = addressText
-
-                launch(Dispatchers.Main) {
-                    updateLocationUI(addressText)
-                }
-            } catch (_: Exception) {
-                launch(Dispatchers.Main) {
-                    updateLocationUI("Lat: ${String.format(Locale.US, "%.4f", lat)}...")
+        updateLocationUI("Fetching address...", false)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val addressText = withContext(Dispatchers.IO) {
+                try {
+                    val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                    val addresses = geocoder.getFromLocation(lat, lng, 1)
+                    if (!addresses.isNullOrEmpty()) {
+                        val address = addresses[0]
+                        address.locality ?: address.subAdminArea ?: address.adminArea ?: "Unknown Location"
+                    } else {
+                        "${String.format(Locale.US, "%.4f", lat)}, ${String.format(Locale.US, "%.4f", lng)}"
+                    }
+                } catch (e: Exception) {
+                    "${String.format(Locale.US, "%.4f", lat)}, ${String.format(Locale.US, "%.4f", lng)}"
                 }
             }
+            currentLocationName = addressText
+            updateLocationUI(addressText, true)
         }
     }
 
-    private fun updateLocationUI(text: String) {
+    private fun updateLocationUI(text: String, isReady: Boolean) {
         _binding?.let { b ->
-            b.pbLocation.visibility = View.GONE
-            b.ivLocIcon.visibility = View.VISIBLE
-
-            val params = b.tvLocationName.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-            params.startToEnd = b.ivLocIcon.id
-            b.tvLocationName.layoutParams = params
-
             b.tvLocationName.text = text
+            if (isReady) {
+                b.pbLocation.visibility = View.INVISIBLE
+                b.ivLocIcon.visibility = View.VISIBLE
+                b.btnSavePoiCard.isEnabled = true
+                b.btnSavePoiCard.alpha = 1.0f
+            } else {
+                b.pbLocation.visibility = View.VISIBLE
+                b.ivLocIcon.visibility = View.INVISIBLE
+                b.btnSavePoiCard.isEnabled = false
+                b.btnSavePoiCard.alpha = 0.5f
+            }
         }
     }
 

@@ -31,6 +31,9 @@ interface BreadcrumbsDao {
     @Query("SELECT * FROM trips WHERE userId = :userId ORDER BY startDate DESC")
     fun getUserTrips(userId: String): kotlinx.coroutines.flow.Flow<List<LocalTrip>>
 
+    @Query("DELETE FROM trips WHERE id = :tripId")
+    suspend fun deleteTripById(tripId: String)
+
     // POIs
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPoi(poi: LocalPoi)
@@ -40,7 +43,16 @@ interface BreadcrumbsDao {
 
     @Query("SELECT * FROM pois WHERE tripId = :tripId ORDER BY timestamp ASC")
     fun getPoisForTrip(tripId: String): Flow<List<LocalPoi>>
-    
+
     @Query("DELETE FROM pois WHERE tripId = :tripId")
     suspend fun deletePoisForTrip(tripId: String)
+
+    @Query("SELECT * FROM users WHERE id = :userId")
+    fun getUserFlow(userId: String): Flow<LocalUser?>
+
+    @Query("DELETE FROM pois WHERE id = :poiId")
+    suspend fun deletePoiById(poiId: String)
+
+    @Query("SELECT * FROM pois WHERE id = :poiId")
+    fun getPoiByIdFlow(poiId: String): Flow<LocalPoi?>
 }
