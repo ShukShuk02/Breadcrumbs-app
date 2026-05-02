@@ -15,37 +15,57 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_profile"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-            android:background="@color/orange_variant"
+            android:background="#F5EEE9"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_user_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
             android:fontFamily="sans-serif-medium"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
+            android:textColor="#2D2621"
+            android:textSize="22sp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toStartOf="@+id/btn_edit_profile"
             app:layout_constraintStart_toEndOf="@+id/iv_profile"
             app:layout_constraintTop_toTopOf="@+id/iv_profile"
-            tools:text="Hillel Levi" />
+            tools:text="Arbel Charny" />
 
         <TextView
             android:id="@+id/tv_user_bio"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_secondary"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="#888888"
             android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:ellipsize="end"
+            android:maxLines="3"
+            app:layout_constraintEnd_toStartOf="@+id/btn_edit_profile"
             app:layout_constraintStart_toStartOf="@+id/tv_user_name"
             app:layout_constraintTop_toBottomOf="@+id/tv_user_name"
             tools:text="Travel enthusiast and developer" />
+
+        <ImageButton
+            android:id="@+id/btn_edit_profile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Edit Profile"
+            android:padding="8dp"
+            android:src="@drawable/ic_edit_outline"
+            app:tint="#2D2621"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_logout"
+            app:layout_constraintEnd_toStartOf="@+id/btn_logout"
+            app:layout_constraintTop_toTopOf="@+id/btn_logout" />
 
         <ImageButton
             android:id="@+id/btn_logout"

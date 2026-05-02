@@ -48,6 +48,67 @@ class BreadcrumbsRepository(
         }
     }
 
+    fun getUserFlow(userId: String): Flow<User?> {
+        return dao.getUserFlow(userId).map { it?.toUser() }
+    }
+
+    suspend fun syncUser(userId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val snapshot = firestore.collection("users").document(userId).get().await()
+                val user = snapshot.toObject(User::class.java)
+                if (user != null) {
+                    dao.insertUser(user.toLocalUser())
+                } else {
+                    val firebaseUser = auth.currentUser
+                    if (firebaseUser != null && firebaseUser.uid == userId) {
+                        val newUser = User(
+                            id = userId,
+                            name = firebaseUser.displayName ?: "",
+                            email = firebaseUser.email ?: "",
+                            profilePictureUrl = firebaseUser.photoUrl?.toString() ?: ""
+                        )
+                        firestore.collection("users").document(userId).set(newUser).await()
+                        dao.insertUser(newUser.toLocalUser())
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Repository", "Error syncing user", e)
+            }
+            Unit
+        }
+    }
+
+    suspend fun updateUserProfile(userId: String, name: String, bio: String, photoUrl: String? = null) {
+        withContext(Dispatchers.IO) {
+            try {
+                val updates = mutableMapOf<String, Any>(
+                    "name" to name,
+                    "bio" to bio
+                )
+                if (photoUrl != null) {
+                    updates["profilePictureUrl"] = photoUrl
+
+                    val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                        .setPhotoUri(android.net.Uri.parse(photoUrl))
+                        .build()
+                    auth.currentUser?.updateProfile(profileUpdates)?.await()
+                }
+
+                firestore.collection("users").document(userId).update(updates).await()
+
+                val user = getUser(userId)
+                if (user != null) {
+                    dao.insertUser(user.toLocalUser())
+                }
+
+            } catch (e: Exception) {
+                Log.e("Repository", "Error updating user profile", e)
+            }
+            Unit
+        }
+    }
+
     suspend fun refreshAllPublicTrips() {
         withContext(Dispatchers.IO) {
             try {
@@ -67,6 +128,17 @@ class BreadcrumbsRepository(
         withContext(Dispatchers.IO) {
             firestore.collection("trips").document(trip.id).set(trip).await()
             dao.insertTrip(trip.toLocalTrip())
+        }
+    }
+
+    suspend fun deleteTrip(tripId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                firestore.collection("trips").document(tripId).delete().await()
+                dao.deleteTripById(tripId)
+            } catch (e: Exception) {
+                Log.e("Repository", "Error deleting trip", e)
+            }
         }
     }
 
@@ -119,6 +191,17 @@ class BreadcrumbsRepository(
         }
     }
 
+    suspend fun deletePoi(tripId: String, poiId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                firestore.collection("trips").document(tripId).collection("pois").document(poiId).delete().await()
+                dao.deletePoiById(poiId)
+            } catch (e: Exception) {
+                Log.e("Repository", "Error deleting POI", e)
+            }
+        }
+    }
+
     suspend fun uploadImage(uri: Uri, path: String): String {
         return withContext(Dispatchers.IO) {
             val ref = storage.reference.child(path)
@@ -129,5 +212,9 @@ class BreadcrumbsRepository(
                 throw Exception("Image upload failed: ${e.message}")
             }
         }
+    }
+
+    fun getPoiFlow(poiId: String): Flow<Poi?> {
+        return dao.getPoiByIdFlow(poiId).map { it?.toPoi() }
     }
 }

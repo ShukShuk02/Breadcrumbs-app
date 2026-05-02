@@ -2,8 +2,10 @@ package com.breadcrumbs.data
 
 import com.breadcrumbs.data.local.LocalPoi
 import com.breadcrumbs.data.local.LocalTrip
+import com.breadcrumbs.data.local.LocalUser
 import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
+import com.breadcrumbs.model.User
 import com.google.firebase.Timestamp
 import java.util.Date
 
@@ -52,5 +54,25 @@ fun LocalPoi.toPoi(): Poi {
         timestamp = if (this.timestamp > 0) Timestamp(Date(this.timestamp)) else null,
         description = this.description,
         imageUrl = this.imageUrl
+    )
+}
+
+fun LocalUser.toUser(): User {
+    return User(
+        id = this.id,
+        name = this.name,
+        bio = this.bio,
+        email = this.email,
+        profilePictureUrl = this.profilePictureUrl
+    )
+}
+
+fun User.toLocalUser(): LocalUser {
+    return LocalUser(
+        id = this.id,
+        name = this.name,
+        bio = this.bio,
+        email = this.email,
+        profilePictureUrl = this.profilePictureUrl
     )
 }

@@ -13,7 +13,11 @@ import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback()) {
+class PoiAdapter(
+    private val isMyTrip: Boolean,
+    private val onEditClicked: ((Poi) -> Unit)? = null,
+    private val onDeleteClicked: ((Poi) -> Unit)? = null
+) : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PoiViewHolder {
         val binding = ItemPoiBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -25,7 +29,7 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
         holder.bind(getItem(position), isLastItem)
     }
 
-    class PoiViewHolder(private val binding: ItemPoiBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class PoiViewHolder(private val binding: ItemPoiBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(poi: Poi, isLastItem: Boolean) {
             binding.tvPoiDescription.text = poi.description
             binding.tvPoiLocation.text = poi.locationName
@@ -51,6 +55,16 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
                 binding.timelineLineBottom.visibility = View.INVISIBLE
             } else {
                 binding.timelineLineBottom.visibility = View.VISIBLE
+            }
+
+            if (isMyTrip) {
+                binding.btnEditPoi.visibility = View.VISIBLE
+                binding.btnDeletePoi.visibility = View.VISIBLE
+                binding.btnEditPoi.setOnClickListener { onEditClicked?.invoke(poi) }
+                binding.btnDeletePoi.setOnClickListener { onDeleteClicked?.invoke(poi) }
+            } else {
+                binding.btnEditPoi.visibility = View.GONE
+                binding.btnDeletePoi.visibility = View.GONE
             }
         }
     }

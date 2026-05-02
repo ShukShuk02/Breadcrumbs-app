@@ -1,5 +1,6 @@
 package com.breadcrumbs.ui
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,10 +13,21 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewModel() {
 
-    val userTrips: StateFlow<List<Pair<Trip, User?>>> = repository.currentUserId?.let { userId ->
+    val currentUserId: String? = repository.currentUserId
+
+    val currentUser: StateFlow<User?> = currentUserId?.let { userId ->
+        repository.getUserFlow(userId).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+    } ?: MutableStateFlow(null)
+
+    val userTrips: StateFlow<List<Pair<Trip, User?>>> = currentUserId?.let { userId ->
         repository.getUserTrips(userId).map { trips ->
             val user = repository.getUser(userId)
             trips.map { trip -> Pair(trip, user) }
@@ -25,6 +37,30 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
             initialValue = emptyList()
         )
     } ?: MutableStateFlow(emptyList())
+
+    init {
+        currentUserId?.let { userId ->
+            viewModelScope.launch {
+                repository.syncUser(userId)
+            }
+        }
+    }
+
+    fun updateProfile(newName: String, newBio: String, newImageUri: Uri? = null) {
+        currentUserId?.let { userId ->
+            viewModelScope.launch {
+                var photoUrl: String? = null
+                if (newImageUri != null) {
+                    try {
+                        photoUrl = repository.uploadImage(newImageUri, "profile_images/$userId/${System.currentTimeMillis()}.jpg")
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                repository.updateUserProfile(userId, newName, newBio, photoUrl)
+            }
+        }
+    }
 
     fun logout() {
         FirebaseAuth.getInstance().signOut()

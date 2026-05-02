@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -65,44 +64,82 @@
                     android:textSize="15sp"
                     tools:text="The Eiffel Tower at sunset was absolutely magical! 🗼" />
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="12dp">
 
                     <ImageView
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
+                        android:id="@+id/iv_location_pin"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
                         android:src="@drawable/ic_pin_orange"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:tint="#8D7D73" />
 
                     <TextView
                         android:id="@+id/tvPoiLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
+                        android:layout_marginStart="6dp"
                         android:textColor="#8D7D73"
                         android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="@+id/iv_location_pin"
+                        app:layout_constraintStart_toEndOf="@+id/iv_location_pin"
+                        app:layout_constraintTop_toTopOf="@+id/iv_location_pin"
                         tools:text="Eiffel Tower" />
 
                     <ImageView
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:layout_marginStart="12dp"
+                        android:id="@+id/iv_calendar_icon"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginStart="16dp"
                         android:src="@drawable/ic_calendar"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/tvPoiLocation"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:tint="#8D7D73" />
 
                     <TextView
                         android:id="@+id/tvPoiDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
+                        android:layout_marginStart="6dp"
                         android:textColor="#8D7D73"
                         android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="@+id/iv_calendar_icon"
+                        app:layout_constraintStart_toEndOf="@+id/iv_calendar_icon"
+                        app:layout_constraintTop_toTopOf="@+id/iv_calendar_icon"
                         tools:text="Dec 15" />
-                </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/btn_delete_poi"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_delete_outline"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="#8D7D73" />
+
+                    <ImageButton
+                        android:id="@+id/btn_edit_poi"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_edit_outline"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/btn_delete_poi"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="#8D7D73" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

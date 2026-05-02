@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class TripAdapter(
+    private val currentUserId: String?,
     private val showUserInfo: Boolean = true,
     private val onTripClicked: (Trip) -> Unit
 ) : ListAdapter<Pair<Trip, User?>, TripAdapter.TripViewHolder>(TripDiffCallback()) {
