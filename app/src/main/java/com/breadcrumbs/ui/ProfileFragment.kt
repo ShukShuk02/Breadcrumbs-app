@@ -9,7 +9,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -85,12 +84,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile), OnMapReadyCallback 
             currentUserId = viewModel.currentUserId,
             showUserInfo = false,
             onTripClicked = { trip ->
-                val bundle = bundleOf(
-                    "tripId" to trip.id,
-                    "tripName" to trip.title,
-                    "isMyTrip" to true
+                val action = ProfileFragmentDirections.actionProfileToTripDetail(
+                    tripId = trip.id,
+                    tripName = trip.title,
+                    isMyTrip = true
                 )
-                findNavController().navigate(R.id.action_profile_to_tripDetail, bundle)
+                findNavController().navigate(action)
             }
         )
 

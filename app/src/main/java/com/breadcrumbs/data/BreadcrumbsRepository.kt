@@ -3,6 +3,8 @@ package com.breadcrumbs.data
 import android.net.Uri
 import android.util.Log
 import com.breadcrumbs.data.local.BreadcrumbsDao
+import com.breadcrumbs.data.remote.WeatherRepository
+import com.breadcrumbs.data.remote.WeatherSnapshot
 import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
@@ -23,6 +25,7 @@ class BreadcrumbsRepository(
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private val weatherRepository = WeatherRepository()
 
     val currentUserId: String?
         get() = auth.currentUser?.uid
@@ -212,6 +215,10 @@ class BreadcrumbsRepository(
                 }
             }
         }
+    }
+
+    suspend fun getCurrentWeather(lat: Double, lng: Double): WeatherSnapshot? {
+        return weatherRepository.getCurrentWeather(lat, lng)
     }
 
     suspend fun deletePoi(tripId: String, poiId: String) {

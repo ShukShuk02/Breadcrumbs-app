@@ -35,6 +35,9 @@ class TripDetailViewModel(
     val creatorName: StateFlow<String?> = _creatorName.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            repository.refreshPoisForTrip(tripId)
+        }
         fetchCreatorName()
     }
 
@@ -54,7 +57,6 @@ class TripDetailViewModel(
         viewModelScope.launch {
             try {
                 repository.deletePoi(poi.tripId, poi.id)
-
                 val remainingPois = repository.getPoisForTrip(poi.tripId).first()
                 if (remainingPois.isEmpty()) {
                     repository.deleteTrip(poi.tripId)

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 sealed class AddPoiState {
@@ -79,6 +80,7 @@ class AddPoiViewModel(private val repository: BreadcrumbsRepository) : ViewModel
                     return@launch
                 }
 
+                val weather = repository.getCurrentWeather(lat, lng)
                 var finalImageUrl = ""
 
                 if (imageUri != null) {
@@ -97,7 +99,11 @@ class AddPoiViewModel(private val repository: BreadcrumbsRepository) : ViewModel
                     latitude = lat,
                     longitude = lng,
                     locationName = locationName,
-                    timestamp = Timestamp.now()
+                    timestamp = Timestamp.now(),
+                    weatherSummary = weather?.summary.orEmpty(),
+                    weatherTemperatureC = weather?.temperatureC?.let {
+                        String.format(Locale.US, "%.1f", it).toDouble()
+                    }
                 )
 
                 repository.addPoiToTrip(poi)

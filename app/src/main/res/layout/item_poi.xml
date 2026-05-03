@@ -64,6 +64,17 @@
                     android:textSize="15sp"
                     tools:text="The Eiffel Tower at sunset was absolutely magical! 🗼" />
 
+                <TextView
+                    android:id="@+id/tvPoiWeather"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="#8D7D73"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="Weather: Partly cloudy, 22.8°C"
+                    tools:visibility="visible" />
+
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -8,4 +8,7 @@
     <color name="text_primary">#2D2D2D</color>
     <color name="text_secondary">#757575</color>
     <color name="card_surface">#FFFFFF</color>
+    <color name="fab_add_background">#F28522</color>
+    <color name="fab_add_disabled">#BDBDBD</color>
+    <color name="fab_add_disabled_icon">#EEEEEE</color>
 </resources>

@@ -76,12 +76,12 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
             currentUserId = FirebaseAuth.getInstance().currentUser?.uid,
             showUserInfo = true,
             onTripClicked = { trip ->
-                val bundle = Bundle().apply {
-                    putString("tripId", trip.id)
-                    putString("tripName", trip.title)
-                    putBoolean("isMyTrip", false)
-                }
-                findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
+                val action = HomeFragmentDirections.actionHomeToTripDetail(
+                    tripId = trip.id,
+                    tripName = trip.title,
+                    isMyTrip = false
+                )
+                findNavController().navigate(action)
             }
         )
 

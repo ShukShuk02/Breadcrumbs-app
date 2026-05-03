@@ -33,6 +33,9 @@ class PoiAdapter(
         fun bind(poi: Poi, isLastItem: Boolean) {
             binding.tvPoiDescription.text = poi.description
             binding.tvPoiLocation.text = poi.locationName
+            val weatherLabel = formatWeatherLabel(poi)
+            binding.tvPoiWeather.text = weatherLabel
+            binding.tvPoiWeather.visibility = if (weatherLabel.isNullOrEmpty()) View.GONE else View.VISIBLE
 
             val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
             val dateStr = if (poi.timestamp != null) {
@@ -65,6 +68,19 @@ class PoiAdapter(
             } else {
                 binding.btnEditPoi.visibility = View.GONE
                 binding.btnDeletePoi.visibility = View.GONE
+            }
+        }
+
+        private fun formatWeatherLabel(poi: Poi): String? {
+            val summary = poi.weatherSummary.trim()
+            val temp = poi.weatherTemperatureC
+            return when {
+                summary.isNotEmpty() && temp != null -> {
+                    "Weather: $summary, ${String.format(Locale.getDefault(), "%.1f", temp)}\u00B0C"
+                }
+                summary.isNotEmpty() -> "Weather: $summary"
+                temp != null -> "Weather: ${String.format(Locale.getDefault(), "%.1f", temp)}\u00B0C"
+                else -> null
             }
         }
     }

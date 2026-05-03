@@ -4,11 +4,11 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
@@ -31,32 +31,30 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
     private var _binding: FragmentTripDetailBinding? = null
     private val binding get() = _binding!!
+    private val args: TripDetailFragmentArgs by navArgs()
     private var googleMap: GoogleMap? = null
-    private var tripId: String? = null
-    private var targetPoiId: String? = null
     private var currentPois: List<Poi> = emptyList()
 
     private val viewModel: TripDetailViewModel by viewModels {
         val app = requireActivity().application as BreadcrumbsApp
-        val tid = arguments?.getString("tripId") ?: ""
-        TripDetailViewModelFactory(app.repository, tid)
+        TripDetailViewModelFactory(app.repository, args.tripId)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentTripDetailBinding.bind(view)
 
-        tripId = arguments?.getString("tripId")
-        targetPoiId = arguments?.getString("targetPoiId")
-        val tripName = arguments?.getString("tripName") ?: ""
-        val isMyTrip = arguments?.getBoolean("isMyTrip") ?: true
+        val tripId = args.tripId
+        val tripName = args.tripName
+        val isMyTrip = args.isMyTrip
+        val targetPoiId = args.targetPoiId
 
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
         binding.btnShare.setOnClickListener {
-            tripId?.let { id -> shareTrip(id, tripName) }
+            shareTrip(tripId, tripName)
         }
 
         binding.tvDetailTitle.text = tripName
@@ -71,11 +69,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.creatorName.collectLatest { name ->
-                    if (name != null) {
-                        binding.tvSharedWith.text = "$name Shared with you"
-                    } else {
-                        binding.tvSharedWith.text = "Shared with you"
-                    }
+                    binding.tvSharedWith.text = if (name != null) "$name Shared with you" else "Shared with you"
                 }
             }
         }
@@ -86,8 +80,11 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         val adapter = PoiAdapter(
             isMyTrip = isMyTrip,
             onEditClicked = { poi ->
-                val bundle = bundleOf("tripId" to poi.tripId, "poiId" to poi.id)
-                findNavController().navigate(R.id.action_tripDetail_to_addPoi, bundle)
+                val action = TripDetailFragmentDirections.actionTripDetailToAddPoi(
+                    tripId = poi.tripId,
+                    poiId = poi.id
+                )
+                findNavController().navigate(action)
             },
             onDeleteClicked = { showDeleteConfirmationDialog(it) }
         )
@@ -101,7 +98,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
             }
         }
 
-        loadData()
+        loadData(targetPoiId)
     }
 
     private fun showDeleteConfirmationDialog(poi: Poi) {
@@ -127,7 +124,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         startActivity(shareIntent)
     }
 
-    private fun loadData() {
+    private fun loadData(targetId: String?) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.pois.collectLatest { pois ->
                 _binding?.let { b ->
@@ -157,8 +154,8 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
                     updateMap(pois)
 
-                    targetPoiId?.let { targetId ->
-                        val index = pois.indexOfFirst { it.id == targetId }
+                    targetId?.let { id ->
+                        val index = pois.indexOfFirst { it.id == id }
                         if (index != -1) {
                             b.rvPois.postDelayed({
                                 val targetView = b.rvPois.layoutManager?.findViewByPosition(index)
@@ -167,7 +164,6 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
                                     b.nsvTripDetail.smoothScrollTo(0, yOffset)
                                 }
                             }, 400)
-                            targetPoiId = null
                         }
                     }
                 }
@@ -189,7 +185,6 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         }
 
         map.clear()
-
         val polylineOptions = PolylineOptions().width(10f).color(requireContext().getColor(R.color.orange_primary))
         val builder = LatLngBounds.Builder()
 

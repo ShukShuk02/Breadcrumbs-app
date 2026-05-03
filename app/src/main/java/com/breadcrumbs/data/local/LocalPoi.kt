@@ -12,5 +12,7 @@ data class LocalPoi(
     val longitude: Double,
     val timestamp: Long,
     val description: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val weatherSummary: String,
+    val weatherTemperatureC: Double?
 )

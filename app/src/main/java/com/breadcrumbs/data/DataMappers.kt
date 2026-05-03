@@ -40,7 +40,9 @@ fun Poi.toLocalPoi(): LocalPoi {
         longitude = this.longitude,
         timestamp = this.timestamp?.toDate()?.time ?: 0L,
         description = this.description,
-        imageUrl = this.imageUrl
+        imageUrl = this.imageUrl,
+        weatherSummary = this.weatherSummary,
+        weatherTemperatureC = this.weatherTemperatureC
     )
 }
 
@@ -53,7 +55,9 @@ fun LocalPoi.toPoi(): Poi {
         longitude = this.longitude,
         timestamp = if (this.timestamp > 0) Timestamp(Date(this.timestamp)) else null,
         description = this.description,
-        imageUrl = this.imageUrl
+        imageUrl = this.imageUrl,
+        weatherSummary = this.weatherSummary,
+        weatherTemperatureC = this.weatherTemperatureC
     )
 }
 
