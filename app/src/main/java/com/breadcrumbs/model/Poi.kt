@@ -10,5 +10,7 @@ data class Poi(
     val longitude: Double = 0.0,
     val timestamp: Timestamp? = null,
     val description: String = "",
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    val weatherSummary: String = "",
+    val weatherTemperatureC: Double? = null
 )
