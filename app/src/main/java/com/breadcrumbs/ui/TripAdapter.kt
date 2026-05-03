@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.breadcrumbs.databinding.ItemTripCardBinding
 import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -39,8 +40,15 @@ class TripAdapter(
             binding.tvTripSubtitle.text = dateStr
 
             if (showUserInfo) {
-                val authorName = user?.name?.takeIf { it.isNotBlank() } ?: "Unknown"
-                binding.tvAuthorNameBadge.text = authorName
+                var fullName = user?.name?.takeIf { it.isNotBlank() }
+                val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (fullName == null && (trip.userId.isBlank() || trip.userId == currentUserId || trip.userId == currentUid)) {
+                    fullName = FirebaseAuth.getInstance().currentUser?.displayName?.takeIf { it.isNotBlank() } ?: "Me"
+                }
+
+                val firstName = fullName?.trim()?.split("\\s+".toRegex())?.firstOrNull() ?: "Unknown"
+                binding.tvAuthorNameBadge.text = firstName
                 binding.cvAuthorBadge.visibility = View.VISIBLE
             } else {
                 binding.cvAuthorBadge.visibility = View.GONE
