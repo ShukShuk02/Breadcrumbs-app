@@ -40,10 +40,12 @@ class HomeViewModel(private val repository: BreadcrumbsRepository) : ViewModel()
     val mapPois: StateFlow<List<Poi>> = repository.allTrips
         .flatMapLatest { trips ->
             flow {
+                val currentUserId = repository.currentUserId
                 val allPois = withContext(Dispatchers.IO) {
-                    trips.mapNotNull { trip ->
-                        repository.getPoisForTrip(trip.id).firstOrNull()
-                    }.flatten()
+                    trips.filter { it.userId != currentUserId }
+                        .mapNotNull { trip ->
+                            repository.getPoisForTrip(trip.id).firstOrNull()
+                        }.flatten()
                 }
                 emit(allPois)
             }
