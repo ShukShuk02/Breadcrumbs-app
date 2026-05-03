@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -17,18 +19,28 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
 import com.breadcrumbs.databinding.FragmentProfileBinding
+import com.breadcrumbs.model.Poi
 import com.bumptech.glide.Glide
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class ProfileFragment : Fragment(R.layout.fragment_profile) {
+class ProfileFragment : Fragment(R.layout.fragment_profile), OnMapReadyCallback {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
     private var selectedImageUri: Uri? = null
     private var dialogAvatarImageView: ImageView? = null
+
+    private var mMap: GoogleMap? = null
+    private var isMapExpanded = false
 
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
@@ -48,6 +60,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         _binding = FragmentProfileBinding.bind(view)
 
         setupUI()
+        setupMap()
+        setupBackPressHandler()
         loadData()
     }
 
@@ -82,6 +96,97 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         binding.rvTrips.layoutManager = GridLayoutManager(context, 3)
         binding.rvTrips.adapter = adapter
+    }
+
+    private fun setupMap() {
+        val mapFragment = childFragmentManager.findFragmentById(R.id.profile_map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
+        binding.btnExpandMap.setOnClickListener { toggleMapFullscreen(true) }
+        binding.btnBackMap.setOnClickListener { toggleMapFullscreen(false) }
+    }
+
+    private fun setupBackPressHandler() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (isMapExpanded) {
+                toggleMapFullscreen(false)
+            } else {
+                isEnabled = false
+                requireActivity().onBackPressed()
+            }
+        }
+    }
+
+    private fun toggleMapFullscreen(expand: Boolean) {
+        isMapExpanded = expand
+
+        val density = resources.displayMetrics.density
+        val layoutParams = binding.cvProfileMap.layoutParams as LinearLayout.LayoutParams
+
+        if (expand) {
+            binding.headerContainer.visibility = View.GONE
+            binding.rvTrips.visibility = View.GONE
+
+            layoutParams.height = LinearLayout.LayoutParams.MATCH_PARENT
+            layoutParams.setMargins(0, 0, 0, 0)
+            binding.cvProfileMap.radius = 0f
+
+            binding.btnExpandMap.visibility = View.GONE
+            binding.btnBackMap.visibility = View.VISIBLE
+        } else {
+            binding.headerContainer.visibility = View.VISIBLE
+            binding.rvTrips.visibility = View.VISIBLE
+
+            layoutParams.height = (220 * density).toInt()
+            val marginPx = (20 * density).toInt()
+            layoutParams.setMargins(marginPx, (8 * density).toInt(), marginPx, 0)
+            binding.cvProfileMap.radius = 24 * density
+
+            binding.btnExpandMap.visibility = View.VISIBLE
+            binding.btnBackMap.visibility = View.GONE
+        }
+
+        binding.cvProfileMap.layoutParams = layoutParams
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        mMap?.uiSettings?.isZoomControlsEnabled = true
+
+        val worldCenter = LatLng(20.0, 0.0)
+        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(worldCenter, 2f))
+
+        mMap?.setOnMarkerClickListener { marker ->
+            val poi = marker.tag as? Poi
+            if (poi != null) {
+                val trip = viewModel.userTrips.value.find { it.first.id == poi.tripId }?.first
+                val bundle = Bundle().apply {
+                    putString("tripId", poi.tripId)
+                    putString("tripName", trip?.title ?: "")
+                    putBoolean("isMyTrip", true)
+                    putString("targetPoiId", poi.id)
+                }
+                findNavController().navigate(R.id.action_profile_to_tripDetail, bundle)
+            }
+            true
+        }
+    }
+
+    private fun updateMapMarkers(pois: List<Poi>) {
+        val map = mMap ?: return
+        map.clear()
+
+        if (pois.isEmpty()) return
+
+        pois.forEach { poi ->
+            val position = LatLng(poi.latitude, poi.longitude)
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .title(poi.locationName)
+            )
+            marker?.tag = poi
+        }
     }
 
     private fun loadData() {
@@ -119,6 +224,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         }
                     }
                 }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.userPois.collectLatest { pois ->
+                updateMapMarkers(pois)
             }
         }
     }

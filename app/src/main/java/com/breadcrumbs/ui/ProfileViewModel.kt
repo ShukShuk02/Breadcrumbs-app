@@ -5,15 +5,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.breadcrumbs.data.BreadcrumbsRepository
+import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewModel() {
 
@@ -37,6 +43,23 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
             initialValue = emptyList()
         )
     } ?: MutableStateFlow(emptyList())
+
+    val userPois: StateFlow<List<Poi>> = currentUserId?.let { userId ->
+        repository.getUserTrips(userId).flatMapLatest { trips ->
+            flow {
+                val allPois = withContext(Dispatchers.IO) {
+                    trips.mapNotNull { trip ->
+                        repository.getPoisForTrip(trip.id).firstOrNull()
+                    }.flatten()
+                }
+                emit(allPois)
+            }
+        }
+    }?.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    ) ?: MutableStateFlow(emptyList())
 
     init {
         currentUserId?.let { userId ->

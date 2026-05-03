@@ -38,12 +38,35 @@ class BreadcrumbsRepository(
     }
 
     suspend fun getUser(userId: String): User? {
+        if (userId.isBlank()) return null
         return withContext(Dispatchers.IO) {
             try {
                 val snapshot = firestore.collection("users").document(userId).get().await()
-                snapshot.toObject(User::class.java)
+                val user = snapshot.toObject(User::class.java)
+
+                if (user != null && user.name.isNotBlank()) {
+                    user
+                } else {
+                    val currentUser = auth.currentUser
+                    if (currentUser != null && currentUser.uid == userId) {
+                        User(
+                            id = userId,
+                            name = currentUser.displayName ?: "",
+                            email = currentUser.email ?: "",
+                            profilePictureUrl = currentUser.photoUrl?.toString() ?: ""
+                        )
+                    } else user
+                }
             } catch (e: Exception) {
-                null
+                val currentUser = auth.currentUser
+                if (currentUser != null && currentUser.uid == userId) {
+                    User(
+                        id = userId,
+                        name = currentUser.displayName ?: "",
+                        email = currentUser.email ?: "",
+                        profilePictureUrl = currentUser.photoUrl?.toString() ?: ""
+                    )
+                } else null
             }
         }
     }

@@ -33,6 +33,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
     private val binding get() = _binding!!
     private var googleMap: GoogleMap? = null
     private var tripId: String? = null
+    private var targetPoiId: String? = null
     private var currentPois: List<Poi> = emptyList()
 
     private val viewModel: TripDetailViewModel by viewModels {
@@ -46,6 +47,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         _binding = FragmentTripDetailBinding.bind(view)
 
         tripId = arguments?.getString("tripId")
+        targetPoiId = arguments?.getString("targetPoiId")
         val tripName = arguments?.getString("tripName") ?: ""
         val isMyTrip = arguments?.getBoolean("isMyTrip") ?: true
 
@@ -54,24 +56,28 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         }
 
         binding.btnShare.setOnClickListener {
-            tripId?.let { id ->
-                shareTrip(id, tripName)
-            }
+            tripId?.let { id -> shareTrip(id, tripName) }
         }
 
         binding.tvDetailTitle.text = tripName
         binding.tvDetailDate.text = ""
 
         if (isMyTrip) {
-            binding.llFriendBadge.visibility = View.GONE
             binding.cvSharedWithYou.visibility = View.GONE
             binding.btnShareCard.visibility = View.VISIBLE
         } else {
-            binding.llFriendBadge.visibility = View.VISIBLE
             binding.cvSharedWithYou.visibility = View.VISIBLE
             binding.btnShareCard.visibility = View.GONE
-            binding.tvFriendName.text = "Shared Trip"
-            binding.tvFriendInitial.text = "F"
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.creatorName.collectLatest { name ->
+                    if (name != null) {
+                        binding.tvSharedWith.text = "$name Shared with you"
+                    } else {
+                        binding.tvSharedWith.text = "Shared with you"
+                    }
+                }
+            }
         }
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -80,15 +86,10 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         val adapter = PoiAdapter(
             isMyTrip = isMyTrip,
             onEditClicked = { poi ->
-                val bundle = bundleOf(
-                    "tripId" to poi.tripId,
-                    "poiId" to poi.id
-                )
+                val bundle = bundleOf("tripId" to poi.tripId, "poiId" to poi.id)
                 findNavController().navigate(R.id.action_tripDetail_to_addPoi, bundle)
             },
-            onDeleteClicked = { poi ->
-                showDeleteConfirmationDialog(poi)
-            }
+            onDeleteClicked = { showDeleteConfirmationDialog(it) }
         )
 
         binding.rvPois.layoutManager = LinearLayoutManager(context)
@@ -107,9 +108,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Post")
             .setMessage("Are you sure you want to delete this post?")
-            .setPositiveButton("Delete") { _, _ ->
-                viewModel.deletePoi(poi)
-            }
+            .setPositiveButton("Delete") { _, _ -> viewModel.deletePoi(poi) }
             .setNegativeButton("Cancel", null)
             .show()
     }
@@ -136,15 +135,12 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
                     (b.rvPois.adapter as? PoiAdapter)?.submitList(pois)
 
                     val photosCount = pois.count { it.imageUrl.isNotEmpty() }
-
                     val timestamps = pois.mapNotNull { it.timestamp?.seconds }
                     val daysCount = if (timestamps.isNotEmpty()) {
                         val min = timestamps.minOrNull() ?: 0
                         val max = timestamps.maxOrNull() ?: 0
                         ((max - min) / (60 * 60 * 24)).toInt() + 1
-                    } else {
-                        0
-                    }
+                    } else 0
 
                     b.tvStatPhotos.text = photosCount.toString()
                     b.tvStatDays.text = daysCount.toString()
@@ -160,6 +156,20 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
                     }
 
                     updateMap(pois)
+
+                    targetPoiId?.let { targetId ->
+                        val index = pois.indexOfFirst { it.id == targetId }
+                        if (index != -1) {
+                            b.rvPois.postDelayed({
+                                val targetView = b.rvPois.layoutManager?.findViewByPosition(index)
+                                targetView?.let { view ->
+                                    val yOffset = b.rvPois.top + view.top
+                                    b.nsvTripDetail.smoothScrollTo(0, yOffset)
+                                }
+                            }, 400)
+                            targetPoiId = null
+                        }
+                    }
                 }
             }
         }
@@ -168,9 +178,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         googleMap?.uiSettings?.isZoomControlsEnabled = true
-        if (currentPois.isNotEmpty()) {
-            updateMap(currentPois)
-        }
+        if (currentPois.isNotEmpty()) updateMap(currentPois)
     }
 
     private fun updateMap(pois: List<Poi>) {
@@ -187,10 +195,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
         pois.forEach { poi ->
             val position = LatLng(poi.latitude, poi.longitude)
-            map.addMarker(MarkerOptions()
-                .position(position)
-                .title(poi.locationName)
-            )
+            map.addMarker(MarkerOptions().position(position).title(poi.locationName))
             polylineOptions.add(position)
             builder.include(position)
         }
@@ -202,8 +207,7 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
             map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         } catch (e: Exception) {
             if (pois.isNotEmpty()) {
-                val p = pois[0]
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(p.latitude, p.longitude), 15f))
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(pois[0].latitude, pois[0].longitude), 15f))
             }
         }
     }
