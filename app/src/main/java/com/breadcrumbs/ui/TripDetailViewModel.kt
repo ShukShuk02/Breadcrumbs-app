@@ -28,6 +28,12 @@ class TripDetailViewModel(
     private val _tripDeletedEvent = MutableSharedFlow<Unit>()
     val tripDeletedEvent: SharedFlow<Unit> = _tripDeletedEvent.asSharedFlow()
 
+    init {
+        viewModelScope.launch {
+            repository.refreshPoisForTrip(tripId)
+        }
+    }
+
     fun deletePoi(poi: Poi) {
         viewModelScope.launch {
             try {

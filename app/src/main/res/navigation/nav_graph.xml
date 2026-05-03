@@ -42,6 +42,14 @@
         <argument
             android:name="tripId"
             app:argType="string" />
+        <argument
+            android:name="tripName"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="isMyTrip"
+            app:argType="boolean"
+            android:defaultValue="true" />
         <deepLink
             app:uri="breadcrumbs://trip/{tripId}" />
         <action
@@ -56,6 +64,11 @@
         tools:layout="@layout/fragment_add_poi">
         <argument
             android:name="tripId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="poiId"
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />

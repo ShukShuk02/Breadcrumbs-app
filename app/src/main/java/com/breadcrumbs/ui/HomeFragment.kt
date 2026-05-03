@@ -45,7 +45,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.tripsWithUsers.collectLatest { tripsWithUsers ->
                 val friendsTrips = tripsWithUsers.filter { it.first.userId != currentUserId }
-
                 tripAdapter.submitList(friendsTrips)
                 updateMapMarkers(friendsTrips.map { it.first })
             }
@@ -63,12 +62,12 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
             currentUserId = FirebaseAuth.getInstance().currentUser?.uid,
             showUserInfo = true,
             onTripClicked = { trip ->
-                val bundle = Bundle().apply {
-                    putString("tripId", trip.id)
-                    putString("tripName", trip.title)
-                    putBoolean("isMyTrip", false)
-                }
-                findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
+                val action = HomeFragmentDirections.actionHomeToTripDetail(
+                    tripId = trip.id,
+                    tripName = trip.title,
+                    isMyTrip = false
+                )
+                findNavController().navigate(action)
             }
         )
 

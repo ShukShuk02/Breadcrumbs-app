@@ -4,11 +4,11 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
@@ -31,32 +31,29 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
 
     private var _binding: FragmentTripDetailBinding? = null
     private val binding get() = _binding!!
+    private val args: TripDetailFragmentArgs by navArgs()
     private var googleMap: GoogleMap? = null
-    private var tripId: String? = null
     private var currentPois: List<Poi> = emptyList()
 
     private val viewModel: TripDetailViewModel by viewModels {
         val app = requireActivity().application as BreadcrumbsApp
-        val tid = arguments?.getString("tripId") ?: ""
-        TripDetailViewModelFactory(app.repository, tid)
+        TripDetailViewModelFactory(app.repository, args.tripId)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentTripDetailBinding.bind(view)
 
-        tripId = arguments?.getString("tripId")
-        val tripName = arguments?.getString("tripName") ?: ""
-        val isMyTrip = arguments?.getBoolean("isMyTrip") ?: true
+        val tripId = args.tripId
+        val tripName = args.tripName
+        val isMyTrip = args.isMyTrip
 
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
         binding.btnShare.setOnClickListener {
-            tripId?.let { id ->
-                shareTrip(id, tripName)
-            }
+            shareTrip(tripId, tripName)
         }
 
         binding.tvDetailTitle.text = tripName
@@ -80,11 +77,11 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         val adapter = PoiAdapter(
             isMyTrip = isMyTrip,
             onEditClicked = { poi ->
-                val bundle = bundleOf(
-                    "tripId" to poi.tripId,
-                    "poiId" to poi.id
+                val action = TripDetailFragmentDirections.actionTripDetailToAddPoi(
+                    tripId = poi.tripId,
+                    poiId = poi.id
                 )
-                findNavController().navigate(R.id.action_tripDetail_to_addPoi, bundle)
+                findNavController().navigate(action)
             },
             onDeleteClicked = { poi ->
                 showDeleteConfirmationDialog(poi)

@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.breadcrumbs.BreadcrumbsApp
 import com.breadcrumbs.R
 import com.breadcrumbs.databinding.FragmentAddPoiBinding
@@ -38,6 +39,7 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
 
     private var _binding: FragmentAddPoiBinding? = null
     private val binding get() = _binding!!
+    private val args: AddPoiFragmentArgs by navArgs()
 
     private val viewModel: AddPoiViewModel by viewModels {
         AddPoiViewModelFactory((requireActivity().application as BreadcrumbsApp).repository)
@@ -82,8 +84,8 @@ class AddPoiFragment : Fragment(R.layout.fragment_add_poi) {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
-        editingPoiId = arguments?.getString("poiId")
-        selectedTripId = arguments?.getString("tripId")
+        editingPoiId = args.poiId
+        selectedTripId = args.tripId
 
         setupEditOrAddMode()
         setupListeners()
