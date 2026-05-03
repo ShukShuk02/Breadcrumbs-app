@@ -3,7 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/profileFragment">
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.breadcrumbs.ui.HomeFragment"
+        android:label="Discover"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_addPoi"
+            app:destination="@id/addPoiFragment" />
+        <action
+            android:id="@+id/action_home_to_tripDetail"
+            app:destination="@id/tripDetailFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"
@@ -11,18 +24,15 @@
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
         <action
-            android:id="@+id/action_profile_to_createTrip"
-            app:destination="@id/createTripFragment" />
+            android:id="@+id/action_profile_to_addPoi"
+            app:destination="@id/addPoiFragment" />
         <action
             android:id="@+id/action_profile_to_tripDetail"
             app:destination="@id/tripDetailFragment" />
+        <action
+            android:id="@+id/action_profile_to_addTrip"
+            app:destination="@id/addTripFragment" />
     </fragment>
-
-    <fragment
-        android:id="@+id/createTripFragment"
-        android:name="com.breadcrumbs.ui.CreateTripFragment"
-        android:label="Create Trip"
-        tools:layout="@layout/fragment_create_trip" />
 
     <fragment
         android:id="@+id/tripDetailFragment"
@@ -32,6 +42,21 @@
         <argument
             android:name="tripId"
             app:argType="string" />
+        <argument
+            android:name="tripName"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="isMyTrip"
+            app:argType="boolean"
+            android:defaultValue="true" />
+        <argument
+            android:name="targetPoiId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <deepLink
+            app:uri="breadcrumbs://trip/{tripId}" />
         <action
             android:id="@+id/action_tripDetail_to_addPoi"
             app:destination="@id/addPoiFragment" />
@@ -44,6 +69,71 @@
         tools:layout="@layout/fragment_add_poi">
         <argument
             android:name="tripId"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="poiId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_addPoi_to_pickLocation"
+            app:destination="@id/pickLocationFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/addTripFragment"
+        android:name="com.breadcrumbs.ui.AddTripFragment"
+        android:label="Add Trip"
+        tools:layout="@layout/fragment_add_trip">
+        <argument
+            android:name="tripId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="isEditMode"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pickLocationFragment"
+        android:name="com.breadcrumbs.ui.PickLocationFragment"
+        android:label="Pick Location"
+        tools:layout="@layout/fragment_pick_location" />
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.breadcrumbs.ui.auth.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_login_to_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.breadcrumbs.ui.auth.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_register_to_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
 </navigation>

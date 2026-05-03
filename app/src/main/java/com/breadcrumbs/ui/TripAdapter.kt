@@ -1,20 +1,26 @@
 package com.breadcrumbs.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.breadcrumbs.databinding.ItemTripBinding
+import com.breadcrumbs.databinding.ItemTripCardBinding
 import com.breadcrumbs.model.Trip
+import com.breadcrumbs.model.User
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class TripAdapter(private val onTripClicked: (Trip) -> Unit) : 
-    ListAdapter<Trip, TripAdapter.TripViewHolder>(TripDiffCallback()) {
+class TripAdapter(
+    private val currentUserId: String?,
+    private val showUserInfo: Boolean = true,
+    private val onTripClicked: (Trip) -> Unit
+) : ListAdapter<Pair<Trip, User?>, TripAdapter.TripViewHolder>(TripDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TripViewHolder {
-        val binding = ItemTripBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemTripCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TripViewHolder(binding)
     }
 
@@ -22,28 +28,45 @@ class TripAdapter(private val onTripClicked: (Trip) -> Unit) :
         holder.bind(getItem(position))
     }
 
-    inner class TripViewHolder(private val binding: ItemTripBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(trip: Trip) {
+    inner class TripViewHolder(private val binding: ItemTripCardBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Pair<Trip, User?>) {
+            val trip = item.first
+            val user = item.second
+
             binding.tvTripTitle.text = trip.title
-            
+
             val dateFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
-            val dateStr = if (trip.startDate != null) {
-                dateFormat.format(trip.startDate.toDate())
+            val dateStr = trip.startDate?.toDate()?.let { dateFormat.format(it) } ?: ""
+            binding.tvTripSubtitle.text = dateStr
+
+            if (showUserInfo) {
+                var fullName = user?.name?.takeIf { it.isNotBlank() }
+                val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (fullName == null && (trip.userId.isBlank() || trip.userId == currentUserId || trip.userId == currentUid)) {
+                    fullName = FirebaseAuth.getInstance().currentUser?.displayName?.takeIf { it.isNotBlank() } ?: "Me"
+                }
+
+                val firstName = fullName?.trim()?.split("\\s+".toRegex())?.firstOrNull() ?: "Unknown"
+                binding.tvAuthorNameBadge.text = firstName
+                binding.cvAuthorBadge.visibility = View.VISIBLE
             } else {
-                "Unknown Date"
+                binding.cvAuthorBadge.visibility = View.GONE
             }
-            binding.tvTripDate.text = dateStr
-            
-            binding.chipPoiCount.text = "${trip.pointCount} locations"
-            
-            // TODO: Load image using Glide
-            
+
+            com.bumptech.glide.Glide.with(binding.root.context)
+                .load(trip.coverImageUrl)
+                .centerCrop()
+                .into(binding.ivTripCover)
+
             binding.root.setOnClickListener { onTripClicked(trip) }
         }
     }
 
-    class TripDiffCallback : DiffUtil.ItemCallback<Trip>() {
-        override fun areItemsTheSame(oldItem: Trip, newItem: Trip): Boolean = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Trip, newItem: Trip): Boolean = oldItem == newItem
+    class TripDiffCallback : DiffUtil.ItemCallback<Pair<Trip, User?>>() {
+        override fun areItemsTheSame(oldItem: Pair<Trip, User?>, newItem: Pair<Trip, User?>): Boolean =
+            oldItem.first.id == newItem.first.id
+        override fun areContentsTheSame(oldItem: Pair<Trip, User?>, newItem: Pair<Trip, User?>): Boolean =
+            oldItem == newItem
     }
 }

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Breadcrumbs</string>
+    <string name="trip_locations_count">%1$d locations</string>
+    <string name="default_web_client_id">649525544178-ban25kmm2617m5ffkpuk2frrq359pn9q.apps.googleusercontent.com</string>
 </resources>

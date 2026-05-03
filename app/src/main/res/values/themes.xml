@@ -9,4 +9,12 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:colorBackground">@color/cream_background</item>
     </style>
+    <style name="CircleFAB" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="TransparentIndicator">
+        <item name="android:color">@android:color/transparent</item>
+    </style>
 </resources>

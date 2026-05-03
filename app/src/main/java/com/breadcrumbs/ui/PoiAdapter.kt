@@ -1,16 +1,23 @@
 package com.breadcrumbs.ui
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.breadcrumbs.R
 import com.breadcrumbs.databinding.ItemPoiBinding
 import com.breadcrumbs.model.Poi
+import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback()) {
+class PoiAdapter(
+    private val isMyTrip: Boolean,
+    private val onEditClicked: ((Poi) -> Unit)? = null,
+    private val onDeleteClicked: ((Poi) -> Unit)? = null
+) : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PoiViewHolder {
         val binding = ItemPoiBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -18,14 +25,18 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
     }
 
     override fun onBindViewHolder(holder: PoiViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val isLastItem = position == itemCount - 1
+        holder.bind(getItem(position), isLastItem)
     }
 
-    class PoiViewHolder(private val binding: ItemPoiBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(poi: Poi) {
+    inner class PoiViewHolder(private val binding: ItemPoiBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(poi: Poi, isLastItem: Boolean) {
             binding.tvPoiDescription.text = poi.description
             binding.tvPoiLocation.text = poi.locationName
-            
+            val weatherLabel = formatWeatherLabel(poi)
+            binding.tvPoiWeather.text = weatherLabel
+            binding.tvPoiWeather.visibility = if (weatherLabel.isNullOrEmpty()) View.GONE else View.VISIBLE
+
             val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
             val dateStr = if (poi.timestamp != null) {
                 dateFormat.format(poi.timestamp.toDate())
@@ -33,8 +44,44 @@ class PoiAdapter : ListAdapter<Poi, PoiAdapter.PoiViewHolder>(PoiDiffCallback())
                 ""
             }
             binding.tvPoiDate.text = dateStr
-            
-            // TODO: Load image
+
+            if (poi.imageUrl.isNotEmpty()) {
+                Glide.with(binding.ivPoiImage.context)
+                    .load(poi.imageUrl)
+                    .centerCrop()
+                    .into(binding.ivPoiImage)
+            } else {
+                binding.ivPoiImage.setImageResource(R.drawable.ic_image_placeholder)
+            }
+
+            if (isLastItem) {
+                binding.timelineLineBottom.visibility = View.INVISIBLE
+            } else {
+                binding.timelineLineBottom.visibility = View.VISIBLE
+            }
+
+            if (isMyTrip) {
+                binding.btnEditPoi.visibility = View.VISIBLE
+                binding.btnDeletePoi.visibility = View.VISIBLE
+                binding.btnEditPoi.setOnClickListener { onEditClicked?.invoke(poi) }
+                binding.btnDeletePoi.setOnClickListener { onDeleteClicked?.invoke(poi) }
+            } else {
+                binding.btnEditPoi.visibility = View.GONE
+                binding.btnDeletePoi.visibility = View.GONE
+            }
+        }
+
+        private fun formatWeatherLabel(poi: Poi): String? {
+            val summary = poi.weatherSummary.trim()
+            val temp = poi.weatherTemperatureC
+            return when {
+                summary.isNotEmpty() && temp != null -> {
+                    "Weather: $summary, ${String.format(Locale.getDefault(), "%.1f", temp)}\u00B0C"
+                }
+                summary.isNotEmpty() -> "Weather: $summary"
+                temp != null -> "Weather: ${String.format(Locale.getDefault(), "%.1f", temp)}\u00B0C"
+                else -> null
+            }
         }
     }
 
