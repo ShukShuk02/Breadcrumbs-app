@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.breadcrumbs.data.BreadcrumbsRepository
+import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,23 @@ class HomeViewModel(private val repository: BreadcrumbsRepository) : ViewModel()
                 }
                 emit(combinedList)
                 _isLoading.value = false
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val mapPois: StateFlow<List<Poi>> = repository.allTrips
+        .flatMapLatest { trips ->
+            flow {
+                val allPois = withContext(Dispatchers.IO) {
+                    trips.mapNotNull { trip ->
+                        repository.getPoisForTrip(trip.id).firstOrNull()
+                    }.flatten()
+                }
+                emit(allPois)
             }
         }
         .stateIn(
