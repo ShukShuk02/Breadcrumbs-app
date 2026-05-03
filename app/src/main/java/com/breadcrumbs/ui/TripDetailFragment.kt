@@ -63,15 +63,21 @@ class TripDetailFragment : Fragment(R.layout.fragment_trip_detail), OnMapReadyCa
         binding.tvDetailDate.text = ""
 
         if (isMyTrip) {
-            binding.llFriendBadge.visibility = View.GONE
             binding.cvSharedWithYou.visibility = View.GONE
             binding.btnShareCard.visibility = View.VISIBLE
         } else {
-            binding.llFriendBadge.visibility = View.VISIBLE
             binding.cvSharedWithYou.visibility = View.VISIBLE
             binding.btnShareCard.visibility = View.GONE
-            binding.tvFriendName.text = "Shared Trip"
-            binding.tvFriendInitial.text = "F"
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.creatorName.collectLatest { name ->
+                    if (name != null) {
+                        binding.tvSharedWith.text = "$name Shared with you"
+                    } else {
+                        binding.tvSharedWith.text = "Shared with you"
+                    }
+                }
+            }
         }
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
