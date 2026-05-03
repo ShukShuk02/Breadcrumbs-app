@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.breadcrumbs.data.BreadcrumbsRepository
 import com.breadcrumbs.model.Poi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -28,9 +31,25 @@ class TripDetailViewModel(
     private val _tripDeletedEvent = MutableSharedFlow<Unit>()
     val tripDeletedEvent: SharedFlow<Unit> = _tripDeletedEvent.asSharedFlow()
 
+    private val _creatorName = MutableStateFlow<String?>(null)
+    val creatorName: StateFlow<String?> = _creatorName.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.refreshPoisForTrip(tripId)
+        }
+        fetchCreatorName()
+    }
+
+    private fun fetchCreatorName() {
+        viewModelScope.launch {
+            val trips = repository.allTrips.firstOrNull() ?: emptyList()
+            val currentTrip = trips.find { it.id == tripId }
+
+            if (currentTrip != null && currentTrip.userId.isNotBlank()) {
+                val user = repository.getUser(currentTrip.userId)
+                _creatorName.value = user?.name ?: "Unknown User"
+            }
         }
     }
 
@@ -38,7 +57,6 @@ class TripDetailViewModel(
         viewModelScope.launch {
             try {
                 repository.deletePoi(poi.tripId, poi.id)
-
                 val remainingPois = repository.getPoisForTrip(poi.tripId).first()
                 if (remainingPois.isEmpty()) {
                     repository.deleteTrip(poi.tripId)
