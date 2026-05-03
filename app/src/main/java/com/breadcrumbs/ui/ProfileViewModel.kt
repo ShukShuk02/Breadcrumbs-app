@@ -19,7 +19,7 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
     val currentUser: StateFlow<User?> = currentUserId?.let { userId ->
         repository.getUserFlow(userId).stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Lazily,
             initialValue = null
         )
     } ?: MutableStateFlow(null)
@@ -32,7 +32,7 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
             .distinctUntilChanged()
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Lazily,
                 initialValue = emptyList()
             )
     } ?: MutableStateFlow(emptyList())
@@ -41,11 +41,9 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
         if (tripsWithUser.isEmpty()) {
             flowOf(emptyList())
         } else {
-            // יצירת רשימת Flows עבור כל הטיולים של המשתמש
             val flows = tripsWithUser.map { (trip, _) ->
                 repository.getPoisForTrip(trip.id)
             }
-            // שילוב כל ה-Flows לזרם אחד שמתעדכן אוטומטית מול ה-Room
             combine(flows) { allPoisArrays ->
                 allPoisArrays.flatMap { it }
             }
@@ -54,7 +52,7 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Lazily,
             initialValue = emptyList()
         )
 

@@ -11,7 +11,9 @@ import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -169,6 +171,14 @@ class ProfileFragment : Fragment(R.layout.fragment_profile), OnMapReadyCallback 
             }
             true
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.userPois.collectLatest { pois ->
+                    updateMapMarkers(pois)
+                }
+            }
+        }
     }
 
     private fun updateMapMarkers(pois: List<Poi>) {
@@ -190,23 +200,25 @@ class ProfileFragment : Fragment(R.layout.fragment_profile), OnMapReadyCallback 
 
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.currentUser.collectLatest { user ->
-                _binding?.let { b ->
-                    if (user != null) {
-                        b.tvUserName.text = user.name.takeIf { it.isNotBlank() } ?: "User"
-                        b.tvUserBio.text = user.bio.takeIf { !it.isNullOrBlank() } ?: "No bio yet."
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentUser.collectLatest { user ->
+                    _binding?.let { b ->
+                        if (user != null) {
+                            b.tvUserName.text = user.name.takeIf { it.isNotBlank() } ?: "User"
+                            b.tvUserBio.text = user.bio.takeIf { !it.isNullOrBlank() } ?: "No bio yet."
 
-                        val imageUrl = user.profilePictureUrl?.takeIf { it.isNotBlank() }
-                            ?: FirebaseAuth.getInstance().currentUser?.photoUrl?.toString()
+                            val imageUrl = user.profilePictureUrl?.takeIf { it.isNotBlank() }
+                                ?: FirebaseAuth.getInstance().currentUser?.photoUrl?.toString()
 
-                        if (!imageUrl.isNullOrEmpty()) {
-                            Glide.with(this@ProfileFragment)
-                                .load(imageUrl)
-                                .centerCrop()
-                                .placeholder(R.drawable.ic_outline_person)
-                                .into(b.ivProfile)
-                        } else {
-                            b.ivProfile.setImageResource(R.drawable.ic_outline_person)
+                            if (!imageUrl.isNullOrEmpty()) {
+                                Glide.with(this@ProfileFragment)
+                                    .load(imageUrl)
+                                    .centerCrop()
+                                    .placeholder(R.drawable.ic_outline_person)
+                                    .into(b.ivProfile)
+                            } else {
+                                b.ivProfile.setImageResource(R.drawable.ic_outline_person)
+                            }
                         }
                     }
                 }
@@ -214,21 +226,17 @@ class ProfileFragment : Fragment(R.layout.fragment_profile), OnMapReadyCallback 
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.userTrips.collectLatest { tripsWithUser ->
-                _binding?.let { b ->
-                    (b.rvTrips.adapter as? TripAdapter)?.submitList(tripsWithUser)
-                    if (tripsWithUser.isEmpty()) {
-                        if(b.tvUserBio.text.toString() == "No bio yet."){
-                            b.tvUserBio.text = "You haven't created any trips yet."
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.userTrips.collectLatest { tripsWithUser ->
+                    _binding?.let { b ->
+                        (b.rvTrips.adapter as? TripAdapter)?.submitList(tripsWithUser)
+                        if (tripsWithUser.isEmpty()) {
+                            if(b.tvUserBio.text.toString() == "No bio yet."){
+                                b.tvUserBio.text = "You haven't created any trips yet."
+                            }
                         }
                     }
                 }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.userPois.collectLatest { pois ->
-                updateMapMarkers(pois)
             }
         }
     }

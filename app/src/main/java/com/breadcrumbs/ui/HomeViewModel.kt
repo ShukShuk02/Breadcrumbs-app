@@ -34,7 +34,7 @@ class HomeViewModel(private val repository: BreadcrumbsRepository) : ViewModel()
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Lazily,
             initialValue = emptyList()
         )
 
@@ -56,7 +56,7 @@ class HomeViewModel(private val repository: BreadcrumbsRepository) : ViewModel()
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Lazily,
             initialValue = emptyList()
         )
 

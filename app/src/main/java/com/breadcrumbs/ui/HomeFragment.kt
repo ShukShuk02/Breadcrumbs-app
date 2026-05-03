@@ -10,7 +10,9 @@ import android.widget.LinearLayout
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.breadcrumbs.BreadcrumbsApp
@@ -52,21 +54,19 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.tripsWithUsers.collectLatest { tripsWithUsers ->
-                val friendsTrips = tripsWithUsers.filter { it.first.userId != currentUserId }
-                tripAdapter.submitList(friendsTrips)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.tripsWithUsers.collectLatest { tripsWithUsers ->
+                    val friendsTrips = tripsWithUsers.filter { it.first.userId != currentUserId }
+                    tripAdapter.submitList(friendsTrips)
+                }
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.mapPois.collectLatest { pois ->
-                updateMapMarkers(pois)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isLoading.collectLatest { isLoading ->
-                binding.pbHomeLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isLoading.collectLatest { isLoading ->
+                    binding.pbHomeLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+                }
             }
         }
     }
@@ -166,6 +166,14 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnMapReadyCallback {
                 findNavController().navigate(R.id.action_home_to_tripDetail, bundle)
             }
             true
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.mapPois.collectLatest { pois ->
+                    updateMapMarkers(pois)
+                }
+            }
         }
     }
 
