@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add_white"
         android:contentDescription="Add new trip"
-        app:backgroundTint="#F28522"
+        app:backgroundTint="@color/fab_add_background"
         app:borderWidth="0dp"
         app:elevation="20dp"
         app:shapeAppearanceOverlay="@style/CircleFAB"
