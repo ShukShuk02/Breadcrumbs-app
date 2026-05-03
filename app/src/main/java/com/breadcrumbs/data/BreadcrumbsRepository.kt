@@ -114,7 +114,6 @@ class BreadcrumbsRepository(
                 )
                 if (photoUrl != null) {
                     updates["profilePictureUrl"] = photoUrl
-
                     val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
                         .setPhotoUri(android.net.Uri.parse(photoUrl))
                         .build()
@@ -127,7 +126,6 @@ class BreadcrumbsRepository(
                 if (user != null) {
                     dao.insertUser(user.toLocalUser())
                 }
-
             } catch (e: Exception) {
                 Log.e("Repository", "Error updating user profile", e)
             }
@@ -144,8 +142,31 @@ class BreadcrumbsRepository(
 
                 val trips = snapshot.toObjects(Trip::class.java)
                 dao.insertTrips(trips.map { it.toLocalTrip() })
+
+                trips.forEach { trip ->
+                    refreshPoisForTrip(trip.id)
+                }
             } catch (e: Exception) {
                 Log.e("Repository", "Error syncing public trips", e)
+            }
+        }
+    }
+
+    suspend fun refreshUserContent(userId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val snapshot = firestore.collection("trips")
+                    .whereEqualTo("userId", userId)
+                    .get().await()
+
+                val trips = snapshot.toObjects(Trip::class.java)
+                dao.insertTrips(trips.map { it.toLocalTrip() })
+
+                trips.forEach { trip ->
+                    refreshPoisForTrip(trip.id)
+                }
+            } catch (e: Exception) {
+                Log.e("Repository", "Error syncing user content", e)
             }
         }
     }
@@ -207,7 +228,6 @@ class BreadcrumbsRepository(
 
                 if (currentCover.isNullOrEmpty()) {
                     tripRef.update("coverImageUrl", poi.imageUrl).await()
-
                     val updatedTripSnapshot = tripRef.get().await()
                     updatedTripSnapshot.toObject(Trip::class.java)?.let { updatedTrip ->
                         dao.insertTrip(updatedTrip.toLocalTrip())

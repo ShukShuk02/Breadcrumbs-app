@@ -9,17 +9,8 @@ import com.breadcrumbs.model.Poi
 import com.breadcrumbs.model.Trip
 import com.breadcrumbs.model.User
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewModel() {
 
@@ -37,34 +28,41 @@ class ProfileViewModel(private val repository: BreadcrumbsRepository) : ViewMode
         repository.getUserTrips(userId).map { trips ->
             val user = repository.getUser(userId)
             trips.map { trip -> Pair(trip, user) }
-        }.stateIn(
+        }
+            .distinctUntilChanged()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+    } ?: MutableStateFlow(emptyList())
+
+    val userPois: StateFlow<List<Poi>> = userTrips.flatMapLatest { tripsWithUser ->
+        if (tripsWithUser.isEmpty()) {
+            flowOf(emptyList())
+        } else {
+            // יצירת רשימת Flows עבור כל הטיולים של המשתמש
+            val flows = tripsWithUser.map { (trip, _) ->
+                repository.getPoisForTrip(trip.id)
+            }
+            // שילוב כל ה-Flows לזרם אחד שמתעדכן אוטומטית מול ה-Room
+            combine(flows) { allPoisArrays ->
+                allPoisArrays.flatMap { it }
+            }
+        }
+    }
+        .distinctUntilChanged()
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-    } ?: MutableStateFlow(emptyList())
-
-    val userPois: StateFlow<List<Poi>> = currentUserId?.let { userId ->
-        repository.getUserTrips(userId).flatMapLatest { trips ->
-            flow {
-                val allPois = withContext(Dispatchers.IO) {
-                    trips.mapNotNull { trip ->
-                        repository.getPoisForTrip(trip.id).firstOrNull()
-                    }.flatten()
-                }
-                emit(allPois)
-            }
-        }
-    }?.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    ) ?: MutableStateFlow(emptyList())
 
     init {
         currentUserId?.let { userId ->
             viewModelScope.launch {
                 repository.syncUser(userId)
+                repository.refreshUserContent(userId)
             }
         }
     }

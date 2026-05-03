@@ -31,25 +31,29 @@ class HomeViewModel(private val repository: BreadcrumbsRepository) : ViewModel()
                 _isLoading.value = false
             }
         }
+        .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    val mapPois: StateFlow<List<Poi>> = repository.allTrips
-        .flatMapLatest { trips ->
-            flow {
-                val currentUserId = repository.currentUserId
-                val allPois = withContext(Dispatchers.IO) {
-                    trips.filter { it.userId != currentUserId }
-                        .mapNotNull { trip ->
-                            repository.getPoisForTrip(trip.id).firstOrNull()
-                        }.flatten()
-                }
-                emit(allPois)
+    val mapPois: StateFlow<List<Poi>> = tripsWithUsers.flatMapLatest { tripsWithUsers ->
+        val currentUserId = repository.currentUserId
+        val otherTrips = tripsWithUsers.map { it.first }.filter { it.userId != currentUserId }
+
+        if (otherTrips.isEmpty()) {
+            flowOf(emptyList())
+        } else {
+            val flows = otherTrips.map { trip ->
+                repository.getPoisForTrip(trip.id)
+            }
+            combine(flows) { allPoisArrays ->
+                allPoisArrays.flatMap { it }
             }
         }
+    }
+        .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
